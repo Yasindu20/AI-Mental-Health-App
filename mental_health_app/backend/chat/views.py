@@ -8,6 +8,8 @@ from .models import Conversation, Message, UserContext, ConversationMode
 from .serializers import (ConversationSerializer, MessageSerializer, 
                          UserContextSerializer, ChatRequestSerializer)
 from ai_engine.empathetic_ai import EmpatheticAI
+from ai_engine.crisis_detector import SmartCrisisDetector
+from crisis_detection.models import CrisisDetection, UserCrisisProfile
 
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
@@ -18,6 +20,18 @@ class ConversationViewSet(viewsets.ModelViewSet):
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=False, methods=['post'])
+    def chat(self, request):
+        """Handle chat messages with crisis detection"""
+        serializer = ChatRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+        data = serializer.validated_data
+        message_text = data['message']
+        mode = data.get('mode', 'unstructured')
+        conversation_id = data.get('conversation_id')
     
     @action(detail=False, methods=['post'])
     def chat(self, request):
@@ -58,17 +72,27 @@ class ConversationViewSet(viewsets.ModelViewSet):
         
         # Get or create user context
         context, created = UserContext.objects.get_or_create(user=request.user)
+        crisis_profile, created = UserCrisisProfile.objects.get_or_create(user=request.user)
+
+        ai_context = {
+            'mood_history': context.mood_history,
+            'triggers': context.triggers,
+            'coping_strategies': context.coping_strategies,
+            'recent_crisis_count': CrisisDetection.objects.filter(
+                user=request.user,
+                created_at__gte=timezone.now() - timezone.timedelta(days=30)
+            ).count(),
+            'has_safety_plan': crisis_profile.has_safety_plan,
+            'support_network_size': len(crisis_profile.support_network)
+        }
         
         # Generate AI response
         ai = EmpatheticAI()
         ai_response = ai.generate_response(
             message_text, 
-            context={
-                'mood_history': context.mood_history,
-                'triggers': context.triggers,
-                'coping_strategies': context.coping_strategies
-            },
-            mode=mode
+            context=ai_context,
+            mode=mode,
+            user=request.user
         )
         
         # Save AI message
@@ -92,14 +116,25 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation.updated_at = timezone.now()
         conversation.save()
         
-        return Response({
+        response_data = {
             'conversation_id': conversation.id,
             'user_message': MessageSerializer(user_message).data,
             'ai_message': MessageSerializer(ai_message).data,
             'suggestions': ai_response.get('suggestions', []),
             'exercise_type': ai_response.get('exercise_type'),
             'emotion_detected': ai_response.get('emotion')
+        }
+    
+        # Add crisis-specific data if detected
+        if ai_response.get('crisis_level'):
+            response_data.update({
+            'crisis_detected': True,
+            'crisis_level': ai_response['crisis_level'],
+            'crisis_resources': ai_response.get('resources', []),
+            'immediate_risk': ai_response.get('immediate_risk', False)
         })
+    
+        return Response(response_data)
     
     @action(detail=True, methods=['get'])
     def history(self, request, pk=None):
@@ -113,6 +148,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
         """Get active conversations"""
         conversations = self.get_queryset().filter(is_active=True)
         return Response(ConversationSerializer(conversations, many=True).data)
+    
+
 
 class UserContextViewSet(viewsets.ModelViewSet):
     serializer_class = UserContextSerializer
