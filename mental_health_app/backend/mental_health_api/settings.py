@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     # Our apps
     'chat',
     'ai_engine',
+    'crisis_detection',
 ]
 
 TEMPLATES = [
