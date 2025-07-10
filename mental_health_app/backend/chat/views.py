@@ -32,18 +32,6 @@ class ConversationViewSet(viewsets.ModelViewSet):
         message_text = data['message']
         mode = data.get('mode', 'unstructured')
         conversation_id = data.get('conversation_id')
-    
-    @action(detail=False, methods=['post'])
-    def chat(self, request):
-        """Handle chat messages"""
-        serializer = ChatRequestSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-        data = serializer.validated_data
-        message_text = data['message']
-        mode = data.get('mode', 'unstructured')
-        conversation_id = data.get('conversation_id')
         
         # Get or create conversation
         if conversation_id:
@@ -72,19 +60,29 @@ class ConversationViewSet(viewsets.ModelViewSet):
         
         # Get or create user context
         context, created = UserContext.objects.get_or_create(user=request.user)
-        crisis_profile, created = UserCrisisProfile.objects.get_or_create(user=request.user)
-
-        ai_context = {
-            'mood_history': context.mood_history,
-            'triggers': context.triggers,
-            'coping_strategies': context.coping_strategies,
-            'recent_crisis_count': CrisisDetection.objects.filter(
-                user=request.user,
-                created_at__gte=timezone.now() - timezone.timedelta(days=30)
-            ).count(),
-            'has_safety_plan': crisis_profile.has_safety_plan,
-            'support_network_size': len(crisis_profile.support_network)
-        }
+        
+        # Try to get crisis profile, or create it if it doesn't exist
+        try:
+            crisis_profile, created = UserCrisisProfile.objects.get_or_create(user=request.user)
+            
+            ai_context = {
+                'mood_history': context.mood_history,
+                'triggers': context.triggers,
+                'coping_strategies': context.coping_strategies,
+                'recent_crisis_count': CrisisDetection.objects.filter(
+                    user=request.user,
+                    created_at__gte=timezone.now() - timezone.timedelta(days=30)
+                ).count(),
+                'has_safety_plan': crisis_profile.has_safety_plan,
+                'support_network_size': len(crisis_profile.support_network)
+            }
+        except:
+            # If crisis profile doesn't exist yet, use basic context
+            ai_context = {
+                'mood_history': context.mood_history,
+                'triggers': context.triggers,
+                'coping_strategies': context.coping_strategies,
+            }
         
         # Generate AI response
         ai = EmpatheticAI()
@@ -128,11 +126,11 @@ class ConversationViewSet(viewsets.ModelViewSet):
         # Add crisis-specific data if detected
         if ai_response.get('crisis_level'):
             response_data.update({
-            'crisis_detected': True,
-            'crisis_level': ai_response['crisis_level'],
-            'crisis_resources': ai_response.get('resources', []),
-            'immediate_risk': ai_response.get('immediate_risk', False)
-        })
+                'crisis_detected': True,
+                'crisis_level': ai_response['crisis_level'],
+                'crisis_resources': ai_response.get('resources', []),
+                'immediate_risk': ai_response.get('immediate_risk', False)
+            })
     
         return Response(response_data)
     

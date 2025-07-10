@@ -1,3 +1,4 @@
+# mental_health_api/settings.py
 import os
 from pathlib import Path
 
@@ -11,12 +12,10 @@ DEBUG = True
 ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.2/howto/static-files/
 STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Add to INSTALLED_APPS
@@ -29,6 +28,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Third party apps
     'rest_framework',
+    'rest_framework.authtoken',  # Add this for token authentication
     'corsheaders',
     # Our apps
     'chat',
@@ -55,7 +55,7 @@ TEMPLATES = [
 # Add middleware
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # Add this
+    'corsheaders.middleware.CorsMiddleware',  # CORS middleware
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -64,11 +64,24 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# CSRF trusted origins
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://localhost:8080', 
+    'http://localhost:55774',
+    'http://localhost:63069',  # Your Flutter port
+    'http://127.0.0.1:8000',
+    'http://127.0.0.1:63069',  # Also add the IP version
+]
+
 # CORS settings (for Flutter connection)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:8080",
     "http://localhost:55774",
+    "http://localhost:63069",  # Your Flutter port
+    "http://127.0.0.1:8000",
+    "http://127.0.0.1:63069",  # Also add the IP version
 ]
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
 CORS_ALLOW_CREDENTIALS = True
@@ -90,12 +103,15 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'cookie',
 ]
+CORS_EXPOSE_HEADERS = ['set-cookie']
 
 # REST Framework settings
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',  # Primary auth method
+        'rest_framework.authentication.SessionAuthentication',  # Backup auth method
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
@@ -103,8 +119,6 @@ REST_FRAMEWORK = {
 }
 
 # Database
-# https://docs.djangoproject.com/en/5.2/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -112,6 +126,6 @@ DATABASES = {
     }
 }
 
-# Add at the end
+# Media files
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

@@ -1,48 +1,37 @@
+// frontend/lib/services/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl = 'http://localhost:8000/api';
-  static String? _sessionId;
+  static String? _token;
 
-  // Initialize session
+  // Initialize token
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    _sessionId = prefs.getString('sessionId');
+    _token = prefs.getString('authToken');
   }
 
-  // Save session
-  static Future<void> _saveSession(String sessionId) async {
-    _sessionId = sessionId;
+  // Save token
+  static Future<void> _saveToken(String token) async {
+    _token = token;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('sessionId', sessionId);
+    await prefs.setString('authToken', token);
   }
 
-  // Clear session
-  static Future<void> clearSession() async {
-    _sessionId = null;
+  // Clear token
+  static Future<void> clearToken() async {
+    _token = null;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('sessionId');
+    await prefs.remove('authToken');
   }
 
   // Get headers
   static Map<String, String> get _headers => {
-    'Content-Type': 'application/json',
-    if (_sessionId != null) 'Cookie': 'sessionid=$_sessionId',
-  };
-
-  // Extract session from response
-  static void _extractSession(http.Response response) {
-    final cookies = response.headers['set-cookie'];
-    if (cookies != null) {
-      final sessionRegex = RegExp(r'sessionid=([^;]+)');
-      final match = sessionRegex.firstMatch(cookies);
-      if (match != null) {
-        _saveSession(match.group(1)!);
-      }
-    }
-  }
+        'Content-Type': 'application/json',
+        if (_token != null) 'Authorization': 'Token $_token',
+      };
 
   // Register
   static Future<Map<String, dynamic>> register(
@@ -60,10 +49,12 @@ class ApiService {
       }),
     );
 
-    _extractSession(response);
-
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      if (data.containsKey('token')) {
+        await _saveToken(data['token']);
+      }
+      return data;
     } else {
       throw Exception(
         jsonDecode(response.body)['error'] ?? 'Registration failed',
@@ -82,10 +73,12 @@ class ApiService {
       body: jsonEncode({'username': username, 'password': password}),
     );
 
-    _extractSession(response);
-
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      if (data.containsKey('token')) {
+        await _saveToken(data['token']);
+      }
+      return data;
     } else {
       throw Exception(jsonDecode(response.body)['error'] ?? 'Login failed');
     }
@@ -93,8 +86,16 @@ class ApiService {
 
   // Logout
   static Future<void> logout() async {
-    await http.post(Uri.parse('$baseUrl/logout/'), headers: _headers);
-    await clearSession();
+    try {
+      await http.post(
+        Uri.parse('$baseUrl/logout/'),
+        headers: _headers,
+      );
+    } catch (e) {
+      print('Error during logout: $e');
+    } finally {
+      await clearToken();
+    }
   }
 
   // Send chat message
@@ -116,7 +117,9 @@ class ApiService {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to send message');
+      print(
+          'Failed to send message: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to send message: ${response.statusCode}');
     }
   }
 
