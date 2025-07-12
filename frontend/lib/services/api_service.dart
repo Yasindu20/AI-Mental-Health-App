@@ -27,8 +27,8 @@ class ApiService {
     await prefs.remove('authToken');
   }
 
-  // Get headers
-  static Map<String, String> get _headers => {
+  // Get headers - Made public so other services can use it
+  static Map<String, String> get headers => {
         'Content-Type': 'application/json',
         if (_token != null) 'Authorization': 'Token $_token',
       };
@@ -89,7 +89,7 @@ class ApiService {
     try {
       await http.post(
         Uri.parse('$baseUrl/logout/'),
-        headers: _headers,
+        headers: headers,
       );
     } catch (e) {
       print('Error during logout: $e');
@@ -104,14 +104,25 @@ class ApiService {
     int? conversationId,
     String mode = 'unstructured',
   }) async {
+    // Create request body with only the necessary fields
+    final Map<String, dynamic> requestBody = {
+      'message': message,
+      'mode': mode,
+    };
+
+    // Only include conversation_id if it's not null
+    if (conversationId != null) {
+      requestBody['conversation_id'] = conversationId;
+    }
+
+    // Print request data for debugging
+    print('Sending message with data: $requestBody');
+    print('Headers: $headers');
+
     final response = await http.post(
       Uri.parse('$baseUrl/conversations/chat/'),
-      headers: _headers,
-      body: jsonEncode({
-        'message': message,
-        'conversation_id': conversationId,
-        'mode': mode,
-      }),
+      headers: headers,
+      body: jsonEncode(requestBody),
     );
 
     if (response.statusCode == 200) {
@@ -119,7 +130,7 @@ class ApiService {
     } else {
       print(
           'Failed to send message: ${response.statusCode} - ${response.body}');
-      throw Exception('Failed to send message: ${response.statusCode}');
+      throw Exception('Failed to send message: ${response.body}');
     }
   }
 
@@ -127,7 +138,7 @@ class ApiService {
   static Future<List<dynamic>> getConversations() async {
     final response = await http.get(
       Uri.parse('$baseUrl/conversations/'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
@@ -143,7 +154,7 @@ class ApiService {
   ) async {
     final response = await http.get(
       Uri.parse('$baseUrl/conversations/$conversationId/history/'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
@@ -157,7 +168,7 @@ class ApiService {
   static Future<Map<String, dynamic>> getMoodTrends() async {
     final response = await http.get(
       Uri.parse('$baseUrl/context/mood_trends/'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode == 200) {

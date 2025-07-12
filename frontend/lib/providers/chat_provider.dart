@@ -1,3 +1,4 @@
+// frontend/lib/providers/chat_provider.dart
 import 'package:flutter/material.dart';
 import '../models/message.dart';
 import '../models/conversation.dart';
@@ -65,6 +66,8 @@ class ChatProvider extends ChangeNotifier {
 
   // Send message
   Future<void> sendMessage(String content) async {
+    if (content.trim().isEmpty) return;
+
     // Add user message immediately
     final userMessage = Message(
       content: content,
@@ -78,6 +81,10 @@ class ChatProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
+      print('Sending message: $content');
+      print('Conversation ID: $_currentConversationId');
+      print('Mode: $_currentMode');
+
       final response = await ApiService.sendMessage(
         message: content,
         conversationId: _currentConversationId,
@@ -85,18 +92,25 @@ class ChatProvider extends ChangeNotifier {
       );
 
       // Update conversation ID if new
-      _currentConversationId = response['conversation_id'];
+      if (response.containsKey('conversation_id')) {
+        _currentConversationId = response['conversation_id'];
+      }
 
-      // Add AI message
-      final aiMessage = Message.fromJson(response['ai_message']);
-      _messages.add(aiMessage);
+      // Add AI message if response contains it
+      if (response.containsKey('ai_message')) {
+        final aiMessage = Message.fromJson(response['ai_message']);
+        _messages.add(aiMessage);
+      }
 
-      // Update suggestions
-      _suggestions = List<String>.from(response['suggestions'] ?? []);
+      // Update suggestions if available
+      if (response.containsKey('suggestions')) {
+        _suggestions = List<String>.from(response['suggestions'] ?? []);
+      }
 
       _isLoading = false;
       notifyListeners();
     } catch (e) {
+      print('Error sending message: $e');
       _isLoading = false;
       // Remove the user message if sending failed
       _messages.removeLast();

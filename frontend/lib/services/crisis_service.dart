@@ -6,13 +6,10 @@ import 'api_service.dart';
 class CrisisService {
   static const String baseUrl = ApiService.baseUrl;
 
-  // Get headers method
+  // Get headers method - now uses the same authentication mechanism as ApiService
   static Map<String, String> _getHeaders() {
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      // Add any authentication headers if needed
-    };
+    // Use the same headers from ApiService to ensure the token is included
+    return ApiService.headers;
   }
 
   // Get crisis resources
@@ -36,22 +33,30 @@ class CrisisService {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((r) => CrisisResource.fromJson(r)).toList();
     } else {
+      print(
+          'Failed to load crisis resources: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to load crisis resources');
     }
   }
 
   // Get emergency contacts
   static Future<List<EmergencyContact>> getEmergencyContacts() async {
+    final headers = _getHeaders();
+    print('Getting emergency contacts with headers: $headers');
+
     final response = await http.get(
       Uri.parse('$baseUrl/emergency-contacts/'),
-      headers: _getHeaders(),
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
       final List<dynamic> data = jsonDecode(response.body);
       return data.map((c) => EmergencyContact.fromJson(c)).toList();
     } else {
-      throw Exception('Failed to load emergency contacts');
+      print(
+          'Failed to load emergency contacts: ${response.statusCode} - ${response.body}');
+      // Return empty list instead of throwing exception to prevent app crashes
+      return [];
     }
   }
 
@@ -68,6 +73,8 @@ class CrisisService {
     if (response.statusCode == 201) {
       return EmergencyContact.fromJson(jsonDecode(response.body));
     } else {
+      print(
+          'Failed to add emergency contact: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to add emergency contact');
     }
   }
@@ -81,6 +88,8 @@ class CrisisService {
     );
 
     if (response.statusCode != 200) {
+      print(
+          'Failed to save safety plan: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to save safety plan');
     }
   }
@@ -95,6 +104,8 @@ class CrisisService {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
+      print(
+          'Failed to check crisis status: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to check crisis status');
     }
   }
@@ -115,6 +126,8 @@ class CrisisService {
     );
 
     if (response.statusCode != 200) {
+      print(
+          'Failed to submit feedback: ${response.statusCode} - ${response.body}');
       throw Exception('Failed to submit feedback');
     }
   }

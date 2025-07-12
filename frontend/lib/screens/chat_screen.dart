@@ -30,17 +30,25 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _loadEmergencyContact() async {
     try {
+      // Delay the loading slightly to ensure authentication is ready
+      await Future.delayed(Duration(seconds: 1));
       final contacts = await CrisisService.getEmergencyContacts();
-      setState(() {
-        if (contacts.isNotEmpty) {
+
+      if (contacts.isNotEmpty) {
+        setState(() {
           _primaryEmergencyContact = contacts.firstWhere(
             (c) => c.isPrimary,
             orElse: () => contacts.first,
           );
-        }
-      });
+        });
+        print(
+            'Loaded primary emergency contact: ${_primaryEmergencyContact?.name}');
+      } else {
+        print('No emergency contacts found');
+      }
     } catch (e) {
-      // Handle error silently
+      // Handle error silently but log it
+      print('Error loading emergency contacts: $e');
     }
   }
 
