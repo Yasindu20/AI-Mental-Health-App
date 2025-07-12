@@ -1,11 +1,13 @@
 import random
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 from datetime import datetime
+from .crisis_detector import SmartCrisisDetector
+from crisis_detection.models import CrisisResource, CrisisDetection, UserCrisisProfile
 import json
 
 class EmpatheticAI:
-    """Simple rule-based AI with empathetic responses"""
+    """Enhanced AI with empathetic responses and smart crisis detection"""
     
     def __init__(self):
         self.emotion_keywords = {
@@ -109,6 +111,9 @@ class EmpatheticAI:
                 ]
             }
         ]
+        
+        # Initialize the smart crisis detector
+        self.crisis_detector = SmartCrisisDetector()
     
     def detect_emotion(self, text: str) -> str:
         """Detect the primary emotion in the text"""
@@ -132,10 +137,66 @@ class EmpatheticAI:
         text_lower = text.lower()
         return any(keyword in text_lower for keyword in crisis_keywords)
     
-    def generate_response(self, message: str, context: Dict = None, mode: str = 'unstructured') -> Dict:
-        """Generate an empathetic response based on the message and context"""
+    def generate_response(self, message: str, context: Dict = None, mode: str = 'unstructured', user=None) -> Dict:
+        """Generate an empathetic response based on the message and context with smart crisis detection"""
         
-        # Check for crisis
+        # First, check for crisis with smart detection
+        crisis_result = self.crisis_detector.detect_crisis(message, context)
+        
+        if crisis_result['level'] != 'none':
+            # Log the detection
+            if user:
+                CrisisDetection.objects.create(
+                    user=user,
+                    message=message,
+                    detected_level=crisis_result['level'],
+                    confidence_score=crisis_result['confidence'],
+                    context_factors=crisis_result['factors'],
+                    response_provided=''  # Will be updated
+                )
+            
+            # Get appropriate resources
+            resources = self._get_crisis_resources(user, crisis_result['level'])
+            
+            # Generate crisis response
+            crisis_response = self.crisis_detector.generate_crisis_response(
+                crisis_result['level'], 
+                crisis_result['factors'],
+                resources
+            )
+            
+            # Build full response
+            response_text = crisis_response['message']
+            
+            if crisis_response['show_resources'] and resources:
+                response_text += "\n\n**Available Resources:**\n"
+                for resource in resources[:3]:  # Show top 3 resources
+                    response_text += f"\n📞 {resource['name']}: {resource['phone_number']}"
+                    if resource.get('text_number'):
+                        response_text += f" (Text: {resource['text_number']})"
+                    if resource.get('is_24_7'):
+                        response_text += " - Available 24/7"
+            
+            # Add emergency contact if critical/emergency
+            if crisis_result['level'] in ['critical', 'emergency'] and user:
+                emergency_contact = self._get_primary_emergency_contact(user)
+                if emergency_contact:
+                    response_text += f"\n\n**Your Emergency Contact:**\n"
+                    response_text += f"👤 {emergency_contact['name']} ({emergency_contact['relationship']}): {emergency_contact['phone_number']}"
+            
+            # Add disclaimer
+            response_text += "\n\n*Please note: I'm an AI assistant and cannot replace professional help. If you're in immediate danger, please call emergency services (911) or go to your nearest emergency room.*"
+            
+            return {
+                'response': response_text,
+                'emotion': 'crisis',
+                'crisis_level': crisis_result['level'],
+                'suggestions': ['call_crisis_line', 'reach_emergency_contact', 'safety_plan', 'emergency_services'],
+                'resources': resources,
+                'immediate_risk': crisis_result['immediate_risk']
+            }
+        
+        # Check for basic crisis keywords if smart detection doesn't find anything
         if self.detect_crisis_keywords(message):
             return {
                 'response': "I'm really concerned about what you're sharing. You don't have to go through this alone. Please reach out to a crisis helpline right away:\n\n• National Suicide Prevention Lifeline: 988\n• Crisis Text Line: Text HOME to 741741\n• International: findahelpline.com\n\nWould you like me to help you find local resources?",
@@ -143,6 +204,7 @@ class EmpatheticAI:
                 'suggestions': ['crisis_resources']
             }
         
+        # Continue with normal response generation if no crisis detected
         emotion = self.detect_emotion(message)
         
         if mode == 'unstructured':
@@ -253,3 +315,56 @@ class EmpatheticAI:
             return ['mood_boost_activity', 'social_connection', 'nature_time', 'creative_outlet']
         else:
             return ['maintain_routine', 'share_positivity', 'gratitude', 'help_others']
+    
+    def _get_crisis_resources(self, user, level: str) -> List[Dict]:
+        """Get relevant crisis resources for user"""
+        resources = []
+        
+        # Get user's country/location if available
+        country = 'US'  # Default
+        if user and hasattr(user, 'profile'):
+            country = getattr(user.profile, 'country', 'US')
+        
+        # Query resources based on level and location
+        queryset = CrisisResource.objects.filter(country=country)
+        
+        # Prioritize based on crisis level
+        if level in ['emergency', 'critical']:
+            # Prioritize suicide prevention and emergency services
+            priority_resources = queryset.filter(
+                specialties__contains='suicide'
+            )[:2]
+            resources.extend([{
+                'name': r.name,
+                'phone_number': r.phone_number,
+                'text_number': r.text_number,
+                'website': r.website,
+                'is_24_7': r.is_24_7
+            } for r in priority_resources])
+        
+        # Add general crisis lines
+        general_resources = queryset.filter(is_24_7=True)[:3]
+        resources.extend([{
+            'name': r.name,
+            'phone_number': r.phone_number,
+            'text_number': r.text_number,
+            'website': r.website,
+            'is_24_7': r.is_24_7
+        } for r in general_resources])
+        
+        return resources
+    
+    def _get_primary_emergency_contact(self, user) -> Optional[Dict]:
+        """Get user's primary emergency contact"""
+        try:
+            contact = user.emergency_contacts.filter(is_primary=True).first()
+            if contact:
+                return {
+                    'name': contact.name,
+                    'relationship': contact.relationship,
+                    'phone_number': contact.phone_number,
+                    'email': contact.email
+                }
+        except:
+            pass
+        return None

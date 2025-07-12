@@ -1,48 +1,37 @@
+// frontend/lib/services/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   static const String baseUrl = 'http://localhost:8000/api';
-  static String? _sessionId;
+  static String? _token;
 
-  // Initialize session
+  // Initialize token
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
-    _sessionId = prefs.getString('sessionId');
+    _token = prefs.getString('authToken');
   }
 
-  // Save session
-  static Future<void> _saveSession(String sessionId) async {
-    _sessionId = sessionId;
+  // Save token
+  static Future<void> _saveToken(String token) async {
+    _token = token;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('sessionId', sessionId);
+    await prefs.setString('authToken', token);
   }
 
-  // Clear session
-  static Future<void> clearSession() async {
-    _sessionId = null;
+  // Clear token
+  static Future<void> clearToken() async {
+    _token = null;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('sessionId');
+    await prefs.remove('authToken');
   }
 
-  // Get headers
-  static Map<String, String> get _headers => {
-    'Content-Type': 'application/json',
-    if (_sessionId != null) 'Cookie': 'sessionid=$_sessionId',
-  };
-
-  // Extract session from response
-  static void _extractSession(http.Response response) {
-    final cookies = response.headers['set-cookie'];
-    if (cookies != null) {
-      final sessionRegex = RegExp(r'sessionid=([^;]+)');
-      final match = sessionRegex.firstMatch(cookies);
-      if (match != null) {
-        _saveSession(match.group(1)!);
-      }
-    }
-  }
+  // Get headers - Made public so other services can use it
+  static Map<String, String> get headers => {
+        'Content-Type': 'application/json',
+        if (_token != null) 'Authorization': 'Token $_token',
+      };
 
   // Register
   static Future<Map<String, dynamic>> register(
@@ -60,10 +49,12 @@ class ApiService {
       }),
     );
 
-    _extractSession(response);
-
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      if (data.containsKey('token')) {
+        await _saveToken(data['token']);
+      }
+      return data;
     } else {
       throw Exception(
         jsonDecode(response.body)['error'] ?? 'Registration failed',
@@ -82,10 +73,12 @@ class ApiService {
       body: jsonEncode({'username': username, 'password': password}),
     );
 
-    _extractSession(response);
-
     if (response.statusCode == 200) {
-      return jsonDecode(response.body);
+      final data = jsonDecode(response.body);
+      if (data.containsKey('token')) {
+        await _saveToken(data['token']);
+      }
+      return data;
     } else {
       throw Exception(jsonDecode(response.body)['error'] ?? 'Login failed');
     }
@@ -93,8 +86,16 @@ class ApiService {
 
   // Logout
   static Future<void> logout() async {
-    await http.post(Uri.parse('$baseUrl/logout/'), headers: _headers);
-    await clearSession();
+    try {
+      await http.post(
+        Uri.parse('$baseUrl/logout/'),
+        headers: headers,
+      );
+    } catch (e) {
+      print('Error during logout: $e');
+    } finally {
+      await clearToken();
+    }
   }
 
   // Send chat message
@@ -103,20 +104,33 @@ class ApiService {
     int? conversationId,
     String mode = 'unstructured',
   }) async {
+    // Create request body with only the necessary fields
+    final Map<String, dynamic> requestBody = {
+      'message': message,
+      'mode': mode,
+    };
+
+    // Only include conversation_id if it's not null
+    if (conversationId != null) {
+      requestBody['conversation_id'] = conversationId;
+    }
+
+    // Print request data for debugging
+    print('Sending message with data: $requestBody');
+    print('Headers: $headers');
+
     final response = await http.post(
       Uri.parse('$baseUrl/conversations/chat/'),
-      headers: _headers,
-      body: jsonEncode({
-        'message': message,
-        'conversation_id': conversationId,
-        'mode': mode,
-      }),
+      headers: headers,
+      body: jsonEncode(requestBody),
     );
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to send message');
+      print(
+          'Failed to send message: ${response.statusCode} - ${response.body}');
+      throw Exception('Failed to send message: ${response.body}');
     }
   }
 
@@ -124,7 +138,7 @@ class ApiService {
   static Future<List<dynamic>> getConversations() async {
     final response = await http.get(
       Uri.parse('$baseUrl/conversations/'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
@@ -140,7 +154,7 @@ class ApiService {
   ) async {
     final response = await http.get(
       Uri.parse('$baseUrl/conversations/$conversationId/history/'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode == 200) {
@@ -154,7 +168,7 @@ class ApiService {
   static Future<Map<String, dynamic>> getMoodTrends() async {
     final response = await http.get(
       Uri.parse('$baseUrl/context/mood_trends/'),
-      headers: _headers,
+      headers: headers,
     );
 
     if (response.statusCode == 200) {

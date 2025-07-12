@@ -23,6 +23,8 @@ class Message {
     );
   }
 
+  get message => null;
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
