@@ -31,7 +31,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _loadEmergencyContact() async {
     try {
       // Delay the loading slightly to ensure authentication is ready
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       final contacts = await CrisisService.getEmergencyContacts();
 
       if (contacts.isNotEmpty) {
