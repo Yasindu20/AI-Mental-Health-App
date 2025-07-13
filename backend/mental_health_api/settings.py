@@ -34,7 +34,32 @@ INSTALLED_APPS = [
     'chat',
     'ai_engine',
     'crisis_detection',
+    'llama_integration',
 ]
+
+LLAMA_CONFIG = {
+    'MODEL_ID': 'meta-llama/Llama-3.2-3B-Instruct',
+    'MAX_MEMORY': '14GB',  # Leave some RAM for system
+    'CACHE_DIR': os.path.join(BASE_DIR, 'model_cache'),
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'meditation_app.log'),
+        },
+    },
+    'loggers': {
+        'llama_integration': {
+            'handlers': ['file'],
+            'level': 'INFO',
+        },
+    },
+}
 
 TEMPLATES = [
     {
