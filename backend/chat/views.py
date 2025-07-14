@@ -8,7 +8,7 @@ from .serializers import (
     ConversationSerializer, MessageSerializer, 
     UserContextSerializer, ChatRequestSerializer
 )
-from llama_integration.llama_service import llama_service
+from ollama_integration.llama_service import llama_service
 import logging
 
 logger = logging.getLogger(__name__)

@@ -34,30 +34,40 @@ INSTALLED_APPS = [
     'chat',
     'ai_engine',
     'crisis_detection',
-    'llama_integration',
+    'ollama_integration',
 ]
 
-LLAMA_CONFIG = {
-    'MODEL_ID': 'meta-llama/Llama-3.2-3B-Instruct',
-    'MAX_MEMORY': '14GB',  # Leave some RAM for system
-    'CACHE_DIR': os.path.join(BASE_DIR, 'model_cache'),
+OLLAMA_CONFIG = {
+    'BASE_URL': 'http://localhost:11434',
+    'MODEL': 'llama3.2:3b-instruct-q4_0',
+    'TIMEOUT': 30,
 }
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+    },
     'handlers': {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'meditation_app.log'),
+            'filename': 'meditation_app.log',
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
         },
     },
-    'loggers': {
-        'llama_integration': {
-            'handlers': ['file'],
-            'level': 'INFO',
-        },
+    'root': {
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
     },
 }
 
