@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny 
 from rest_framework.response import Response
 from django.utils import timezone
 from django.http import StreamingHttpResponse
@@ -140,7 +140,7 @@ def meditation_chat(request):
         })
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def check_ollama_status(request):
     """Check if Ollama is running and model is available"""
     
