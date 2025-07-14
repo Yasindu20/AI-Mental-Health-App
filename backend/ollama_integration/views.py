@@ -7,7 +7,7 @@ from django.http import StreamingHttpResponse
 import json
 
 from chat.models import Conversation, Message, UserContext
-from .ollama_service import ollama_service
+from .llama_service import ollama_service
 import logging
 
 logger = logging.getLogger(__name__)

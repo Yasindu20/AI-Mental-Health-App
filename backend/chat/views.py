@@ -8,7 +8,7 @@ from .serializers import (
     ConversationSerializer, MessageSerializer, 
     UserContextSerializer, ChatRequestSerializer
 )
-from ollama_integration.llama_service import llama_service
+from ollama_integration.llama_service import ollama_service
 import logging
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
     
     @action(detail=False, methods=['post'])
     def chat(self, request):
-        """Handle chat messages with Llama 3.2"""
+        """Handle chat messages with Ollama"""
         message_text = request.data.get('message', '').strip()
         
         if not message_text:
@@ -63,24 +63,24 @@ class ConversationViewSet(viewsets.ModelViewSet):
         # Detect mood from message
         user_mood = self._detect_mood(message_text)
         
-        # Prepare context for Llama
-        llama_context = {
+        # Prepare context for Ollama
+        ollama_context = {
             'recent_topics': self._get_recent_topics(conversation),
             'mood_history': context.mood_history[-5:] if context.mood_history else [],
         }
         
         try:
-            # Generate response using Llama
-            llama_response = llama_service.generate_meditation_response(
+            # Generate response using Ollama
+            ollama_response = ollama_service.generate_meditation_response(
                 message=message_text,
-                context=llama_context,
+                context=ollama_context,
                 user_mood=user_mood
             )
             
             # Save AI response
             ai_message = Message.objects.create(
                 conversation=conversation,
-                content=llama_response['response'],
+                content=ollama_response['response'],
                 is_user=False,
                 emotion_detected=user_mood
             )
@@ -97,8 +97,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
                 'conversation_id': conversation.id,
                 'user_message': MessageSerializer(user_message).data,
                 'ai_message': MessageSerializer(ai_message).data,
-                'meditation_suggested': llama_response.get('meditation_suggested', False),
-                'techniques': llama_response.get('techniques', []),
+                'meditation_suggested': ollama_response.get('meditation_suggested', False),
+                'techniques': ollama_response.get('techniques', []),
                 'mood_detected': user_mood,
             })
             
@@ -171,3 +171,70 @@ class ConversationViewSet(viewsets.ModelViewSet):
                         topics.append(topic)
                         
         return topics
+
+
+class UserContextViewSet(viewsets.ModelViewSet):
+    """Manage user context and preferences"""
+    serializer_class = UserContextSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        return UserContext.objects.filter(user=self.request.user)
+    
+    def get_object(self):
+        # Get or create context for the current user
+        context, created = UserContext.objects.get_or_create(user=self.request.user)
+        return context
+    
+    @action(detail=False, methods=['post'])
+    def update_mood(self, request):
+        """Update user's mood entry"""
+        mood = request.data.get('mood')
+        score = request.data.get('score')
+        
+        if not mood or score is None:
+            return Response(
+                {'error': 'Mood and score are required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        context = self.get_object()
+        context.add_mood_entry(mood=mood, score=int(score))
+        
+        return Response({
+            'message': 'Mood updated successfully',
+            'mood_history_count': len(context.mood_history)
+        })
+    
+    @action(detail=False, methods=['get'])
+    def mood_stats(self, request):
+        """Get user's mood statistics"""
+        context = self.get_object()
+        
+        if not context.mood_history:
+            return Response({
+                'average_score': None,
+                'recent_trend': 'neutral',
+                'total_entries': 0
+            })
+        
+        # Calculate statistics
+        recent_moods = context.mood_history[-7:]  # Last 7 entries
+        scores = [m.get('score', 5) for m in recent_moods if 'score' in m]
+        
+        avg_score = sum(scores) / len(scores) if scores else 5
+        
+        # Determine trend
+        if avg_score >= 7:
+            trend = 'positive'
+        elif avg_score <= 4:
+            trend = 'concerning'
+        else:
+            trend = 'neutral'
+        
+        return Response({
+            'average_score': round(avg_score, 1),
+            'recent_trend': trend,
+            'total_entries': len(context.mood_history),
+            'recent_moods': recent_moods
+        })
