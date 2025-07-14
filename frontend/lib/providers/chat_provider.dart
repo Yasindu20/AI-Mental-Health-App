@@ -1,66 +1,37 @@
-// frontend/lib/providers/chat_provider.dart
 import 'package:flutter/material.dart';
 import '../models/message.dart';
-import '../models/conversation.dart';
 import '../services/api_service.dart';
 
 class ChatProvider extends ChangeNotifier {
   List<Message> _messages = [];
-  List<Conversation> _conversations = [];
   int? _currentConversationId;
   bool _isLoading = false;
-  String _currentMode = 'unstructured';
-  List<String> _suggestions = [];
+  bool _showMeditationSuggestion = false;
+  List<String> _suggestedTechniques = [];
+  String? _detectedMood;
+  bool _ollamaConnected = false;
 
   List<Message> get messages => _messages;
-  List<Conversation> get conversations => _conversations;
   int? get currentConversationId => _currentConversationId;
   bool get isLoading => _isLoading;
-  String get currentMode => _currentMode;
-  List<String> get suggestions => _suggestions;
+  bool get showMeditationSuggestion => _showMeditationSuggestion;
+  List<String> get suggestedTechniques => _suggestedTechniques;
+  String? get detectedMood => _detectedMood;
+  bool get ollamaConnected => _ollamaConnected;
 
-  // Set conversation mode
-  void setMode(String mode) {
-    _currentMode = mode;
-    _currentConversationId = null;
-    _messages = [];
-    notifyListeners();
+  ChatProvider() {
+    checkOllamaStatus();
   }
 
-  // Load conversations
-  Future<void> loadConversations() async {
+  // Check if Ollama is running
+  Future<void> checkOllamaStatus() async {
     try {
-      _isLoading = true;
-      notifyListeners();
-
-      final data = await ApiService.getConversations();
-      _conversations = data.map((c) => Conversation.fromJson(c)).toList();
-
-      _isLoading = false;
+      final status = await ApiService.checkOllamaStatus();
+      _ollamaConnected = status['connected'] && status['model_available'];
       notifyListeners();
     } catch (e) {
-      _isLoading = false;
+      _ollamaConnected = false;
       notifyListeners();
-      rethrow;
-    }
-  }
-
-  // Load conversation history
-  Future<void> loadConversationHistory(int conversationId) async {
-    try {
-      _isLoading = true;
-      notifyListeners();
-
-      final data = await ApiService.getConversationHistory(conversationId);
-      _messages = data.map((m) => Message.fromJson(m)).toList();
-      _currentConversationId = conversationId;
-
-      _isLoading = false;
-      notifyListeners();
-    } catch (e) {
-      _isLoading = false;
-      notifyListeners();
-      rethrow;
     }
   }
 
@@ -81,14 +52,9 @@ class ChatProvider extends ChangeNotifier {
       _isLoading = true;
       notifyListeners();
 
-      print('Sending message: $content');
-      print('Conversation ID: $_currentConversationId');
-      print('Mode: $_currentMode');
-
-      final response = await ApiService.sendMessage(
+      final response = await ApiService.sendMeditationMessage(
         message: content,
         conversationId: _currentConversationId,
-        mode: _currentMode,
       );
 
       // Update conversation ID if new
@@ -96,34 +62,52 @@ class ChatProvider extends ChangeNotifier {
         _currentConversationId = response['conversation_id'];
       }
 
-      // Add AI message if response contains it
+      // Add AI message
       if (response.containsKey('ai_message')) {
         final aiMessage = Message.fromJson(response['ai_message']);
         _messages.add(aiMessage);
       }
 
-      // Update suggestions if available
-      if (response.containsKey('suggestions')) {
-        _suggestions = List<String>.from(response['suggestions'] ?? []);
+      // Handle meditation suggestions
+      if (response['meditation_suggested'] == true) {
+        _showMeditationSuggestion = true;
+        _suggestedTechniques = List<String>.from(response['techniques'] ?? []);
       }
+
+      // Update detected mood
+      _detectedMood = response['mood_detected'];
 
       _isLoading = false;
       notifyListeners();
     } catch (e) {
-      print('Error sending message: $e');
+      debugPrint('Error sending message: $e');
       _isLoading = false;
-      // Remove the user message if sending failed
-      _messages.removeLast();
+
+      // Add error message
+      final errorMessage = Message(
+        content:
+            "I'm having trouble connecting. Please make sure the meditation service is running.",
+        isUser: false,
+        createdAt: DateTime.now(),
+      );
+      _messages.add(errorMessage);
+
       notifyListeners();
-      rethrow;
     }
   }
 
-  // Clear current conversation
+  void hideMeditationSuggestion() {
+    _showMeditationSuggestion = false;
+    notifyListeners();
+  }
+
+  // Clear conversation
   void clearConversation() {
     _messages = [];
     _currentConversationId = null;
-    _suggestions = [];
+    _showMeditationSuggestion = false;
+    _suggestedTechniques = [];
+    _detectedMood = null;
     notifyListeners();
   }
 }

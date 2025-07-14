@@ -1,4 +1,3 @@
-// frontend/lib/services/api_service.dart
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -7,27 +6,23 @@ class ApiService {
   static const String baseUrl = 'http://localhost:8000/api';
   static String? _token;
 
-  // Initialize token
   static Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('authToken');
   }
 
-  // Save token
   static Future<void> _saveToken(String token) async {
     _token = token;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('authToken', token);
   }
 
-  // Clear token
   static Future<void> clearToken() async {
     _token = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('authToken');
   }
 
-  // Get headers - Made public so other services can use it
   static Map<String, String> get headers => {
         'Content-Type': 'application/json',
         if (_token != null) 'Authorization': 'Token $_token',
@@ -98,29 +93,21 @@ class ApiService {
     }
   }
 
-  // Send chat message
-  static Future<Map<String, dynamic>> sendMessage({
+  // Send meditation chat message
+  static Future<Map<String, dynamic>> sendMeditationMessage({
     required String message,
     int? conversationId,
-    String mode = 'unstructured',
   }) async {
-    // Create request body with only the necessary fields
     final Map<String, dynamic> requestBody = {
       'message': message,
-      'mode': mode,
     };
 
-    // Only include conversation_id if it's not null
     if (conversationId != null) {
       requestBody['conversation_id'] = conversationId;
     }
 
-    // Print request data for debugging
-    print('Sending message with data: $requestBody');
-    print('Headers: $headers');
-
     final response = await http.post(
-      Uri.parse('$baseUrl/conversations/chat/'),
+      Uri.parse('$baseUrl/meditation/chat/'),
       headers: headers,
       body: jsonEncode(requestBody),
     );
@@ -130,51 +117,37 @@ class ApiService {
     } else {
       print(
           'Failed to send message: ${response.statusCode} - ${response.body}');
-      throw Exception('Failed to send message: ${response.body}');
+      throw Exception('Failed to send message');
     }
   }
 
-  // Get conversations
-  static Future<List<dynamic>> getConversations() async {
+  // Check Ollama status
+  static Future<Map<String, dynamic>> checkOllamaStatus() async {
     final response = await http.get(
-      Uri.parse('$baseUrl/conversations/'),
+      Uri.parse('$baseUrl/meditation/status/'),
       headers: headers,
     );
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      throw Exception('Failed to load conversations');
+      return {
+        'connected': false,
+        'models': [],
+        'current_model': '',
+        'model_available': false,
+      };
     }
   }
 
-  // Get conversation history
-  static Future<List<dynamic>> getConversationHistory(
-    int conversationId,
-  ) async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/conversations/$conversationId/history/'),
-      headers: headers,
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to load conversation history');
-    }
-  }
-
-  // Get mood trends
-  static Future<Map<String, dynamic>> getMoodTrends() async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/context/mood_trends/'),
-      headers: headers,
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to load mood trends');
-    }
+  // Get meditation stats (placeholder for future features)
+  static Future<Map<String, dynamic>> getMeditationStats() async {
+    // For now, return mock data
+    return {
+      'total_sessions': 12,
+      'total_minutes': 156,
+      'current_streak': 5,
+      'favorite_techniques': ['breathing', 'mindfulness'],
+    };
   }
 }
