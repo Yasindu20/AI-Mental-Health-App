@@ -3,208 +3,318 @@ import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  Map<String, dynamic> _stats = {
+    'total_sessions': 0,
+    'total_minutes': 0,
+    'current_streak': 0,
+  };
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    // TODO: Load actual stats from API
+    // For now, using placeholder values
+    setState(() {
+      _stats = {
+        'total_sessions': 12,
+        'total_minutes': 156,
+        'current_streak': 5,
+      };
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Mental Health Companion'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: () async {
-              await authProvider.logout();
-              if (!context.mounted) return;
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-          ),
-        ],
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Welcome section
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome back, ${authProvider.user?['username'] ?? 'Friend'}!',
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
+      backgroundColor: const Color(0xFFF5F5F5),
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo/Icon
+                Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF6B4EFF).withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: const Icon(
+                    Icons.spa,
+                    size: 60,
+                    color: Colors.white,
+                  ),
+                ),
+
+                const SizedBox(height: 32),
+
+                // Welcome text
+                Text(
+                  'Welcome back, ${authProvider.user?['username'] ?? 'Friend'}',
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2D2D2D),
+                  ),
+                ),
+
+                const SizedBox(height: 8),
+
+                Text(
+                  'Your meditation companion is here',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                  ),
+                ),
+
+                const SizedBox(height: 48),
+
+                // Start Chat Button
+                Container(
+                  width: double.infinity,
+                  height: 56,
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
+                    ),
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF6B4EFF).withOpacity(0.3),
+                        blurRadius: 15,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Clear any previous conversation
+                      Provider.of<ChatProvider>(context, listen: false)
+                          .clearConversation();
+                      Navigator.pushNamed(context, '/chat');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.transparent,
+                      shadowColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'How are you feeling today?',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[600],
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat_bubble_outline, size: 24),
+                        SizedBox(width: 12),
+                        Text(
+                          'Start Conversation',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Quick Stats Card
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          _buildStatItem(
+                            icon: Icons.self_improvement,
+                            label: 'Sessions',
+                            value: _stats['total_sessions'].toString(),
+                            color: const Color(0xFF6B4EFF),
+                          ),
+                          _buildStatItem(
+                            icon: Icons.timer,
+                            label: 'Minutes',
+                            value: _stats['total_minutes'].toString(),
+                            color: const Color(0xFF4CAF50),
+                          ),
+                          _buildStatItem(
+                            icon: Icons.calendar_today,
+                            label: 'Streak',
+                            value: _stats['current_streak'].toString(),
+                            color: const Color(0xFFFF9800),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+
+                const SizedBox(height: 24),
+
+                // Quick Actions
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildQuickAction(
+                        icon: Icons.history,
+                        label: 'History',
+                        onTap: () {
+                          // TODO: Navigate to history
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('History coming soon!'),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildQuickAction(
+                        icon: Icons.settings,
+                        label: 'Settings',
+                        onTap: () {
+                          // TODO: Navigate to settings
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Settings coming soon!'),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 24),
+                const SizedBox(height: 32),
 
-            // Quick actions
-            const Text(
-              'What would you like to do?',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Action cards
-            GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              children: [
-                _buildActionCard(
-                  context,
-                  icon: Icons.chat,
-                  title: 'Free Chat',
-                  subtitle: 'Talk about anything',
-                  color: Colors.blue,
-                  onTap: () {
-                    Provider.of<ChatProvider>(context, listen: false)
-                        .setMode('unstructured');
-                    Navigator.pushNamed(context, '/chat');
+                // Logout button
+                TextButton.icon(
+                  onPressed: () async {
+                    await authProvider.logout();
+                    if (!context.mounted) return;
+                    Navigator.pushReplacementNamed(context, '/login');
                   },
-                ),
-                _buildActionCard(
-                  context,
-                  icon: Icons.mood,
-                  title: 'Mood Check-in',
-                  subtitle: 'Track your mood',
-                  color: Colors.orange,
-                  onTap: () {
-                    Provider.of<ChatProvider>(context, listen: false)
-                        .setMode('mood_check');
-                    Navigator.pushNamed(context, '/chat');
-                  },
-                ),
-                _buildActionCard(
-                  context,
-                  icon: Icons.psychology,
-                  title: 'CBT Exercise',
-                  subtitle: 'Challenge thoughts',
-                  color: Colors.purple,
-                  onTap: () {
-                    Provider.of<ChatProvider>(context, listen: false)
-                        .setMode('cbt_exercise');
-                    Navigator.pushNamed(context, '/chat');
-                  },
-                ),
-                _buildActionCard(
-                  context,
-                  icon: Icons.self_improvement,
-                  title: 'Mindfulness',
-                  subtitle: 'Relaxation exercises',
-                  color: Colors.green,
-                  onTap: () {
-                    Provider.of<ChatProvider>(context, listen: false)
-                        .setMode('mindfulness');
-                    Navigator.pushNamed(context, '/chat');
-                  },
+                  icon: const Icon(Icons.logout, color: Colors.grey),
+                  label: const Text(
+                    'Logout',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
               ],
             ),
-
-            const SizedBox(height: 24),
-
-            // Recent conversations
-            const Text(
-              'Continue Conversation',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-
-            // Placeholder for recent conversations
-            Card(
-              child: ListTile(
-                leading: const Icon(Icons.history),
-                title: const Text('View conversation history'),
-                subtitle: const Text('Continue where you left off'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () {
-                  // Navigate to history screen once implemented
-                  // Navigator.pushNamed(context, '/history');
-                },
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildActionCard(
-    BuildContext context, {
+  Widget _buildStatItem({
     required IconData icon,
-    required String title,
-    required String subtitle,
+    required String label,
+    required String value,
     required Color color,
+  }) {
+    return Column(
+      children: [
+        Icon(icon, color: color, size: 28),
+        const SizedBox(height: 8),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey[600],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildQuickAction({
+    required IconData icon,
+    required String label,
     required VoidCallback onTap,
   }) {
-    return Card(
-      elevation: 2,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircleAvatar(
-                backgroundColor: color.withAlpha((0.1 * 255).round()),
-                radius: 30,
-                child: Icon(
-                  icon,
-                  color: color,
-                  size: 30,
-                ),
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 10,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              color: const Color(0xFF6B4EFF),
+              size: 24,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[700],
               ),
-              const SizedBox(height: 12),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey[600],
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
