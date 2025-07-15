@@ -1,7 +1,6 @@
-// frontend/lib/screens/meditation_library_screen.dart
 import 'package:flutter/material.dart';
-import '../models/meditation_models.dart';
-import '../services/meditation_service.dart';
+import 'package:flutter/services.dart';
+import '../widgets/meditation_card.dart';
 import 'meditation_detail_screen.dart';
 
 class MeditationLibraryScreen extends StatefulWidget {
@@ -12,296 +11,344 @@ class MeditationLibraryScreen extends StatefulWidget {
       _MeditationLibraryScreenState();
 }
 
-class _MeditationLibraryScreenState extends State<MeditationLibraryScreen> {
-  List<Meditation> _meditations = [];
-  bool _isLoading = true;
-  String? _selectedType;
-  String? _selectedLevel;
-  String? _selectedState;
+class _MeditationLibraryScreenState extends State<MeditationLibraryScreen>
+    with TickerProviderStateMixin {
+  final TextEditingController _searchController = TextEditingController();
+  late TabController _tabController;
+  String _searchQuery = '';
+  bool _isLoading = false;
 
-  final List<String> _types = [
-    'breathing',
-    'mindfulness',
-    'body_scan',
-    'loving_kindness',
-    'visualization',
-    'movement',
-    'mantra',
-    'zen'
+  // Sample meditation data
+  final List<Map<String, dynamic>> _allMeditations = [
+    {
+      'id': '1',
+      'title': 'Morning Mindfulness',
+      'category': 'Mindfulness',
+      'duration': '10 min',
+      'difficulty': 'Beginner',
+      'description':
+          'Start your day with intention and awareness through this gentle morning meditation.',
+      'audioUrl': 'https://example.com/morning_mindfulness.mp3',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500',
+      'rating': 4.8,
+      'isFavorite': false,
+    },
+    {
+      'id': '2',
+      'title': 'Deep Sleep Meditation',
+      'category': 'Sleep',
+      'duration': '20 min',
+      'difficulty': 'Intermediate',
+      'description':
+          'Drift into peaceful sleep with this calming bedtime meditation.',
+      'audioUrl': 'https://example.com/deep_sleep.mp3',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1445116572660-236099ec97a0?w=500',
+      'rating': 4.9,
+      'isFavorite': true,
+    },
+    {
+      'id': '3',
+      'title': 'Anxiety Relief',
+      'category': 'Stress Relief',
+      'duration': '15 min',
+      'difficulty': 'Beginner',
+      'description':
+          'Find calm and peace with this anxiety-reducing meditation practice.',
+      'audioUrl': 'https://example.com/anxiety_relief.mp3',
+      'imageUrl':
+          'https://images.unsplash.com/photo-1499209974431-9dddcece7f88?w=500',
+      'rating': 4.7,
+      'isFavorite': false,
+    },
   ];
 
-  final List<String> _levels = ['beginner', 'intermediate', 'advanced'];
-
-  final List<String> _states = [
-    'anxiety',
-    'depression',
-    'stress',
-    'anger',
-    'insomnia',
-    'focus'
+  List<Map<String, dynamic>> _filteredMeditations = [];
+  List<String> _categories = [
+    'All',
+    'Mindfulness',
+    'Sleep',
+    'Stress Relief',
+    'Focus'
   ];
 
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: _categories.length, vsync: this);
+    _filteredMeditations = _allMeditations;
     _loadMeditations();
   }
 
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _tabController.dispose();
+    super.dispose();
+  }
+
   Future<void> _loadMeditations() async {
-    setState(() => _isLoading = true);
-    try {
-      final meditations = await MeditationService.browseMeditations(
-        type: _selectedType,
-        level: _selectedLevel,
-        targetState: _selectedState,
-      );
-      setState(() {
-        _meditations = meditations;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load meditations: $e')),
-      );
-    }
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Simulate API call
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (!mounted) return;
+
+    setState(() {
+      _isLoading = false;
+      _filteredMeditations = _allMeditations;
+    });
+  }
+
+  void _filterMeditations() {
+    setState(() {
+      String selectedCategory = _categories[_tabController.index];
+
+      _filteredMeditations = _allMeditations.where((meditation) {
+        bool matchesSearch = meditation['title']
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase()) ||
+            meditation['description']
+                .toLowerCase()
+                .contains(_searchQuery.toLowerCase());
+
+        bool matchesCategory = selectedCategory == 'All' ||
+            meditation['category'] == selectedCategory;
+
+        return matchesSearch && matchesCategory;
+      }).toList();
+    });
+  }
+
+  void _navigateToMeditationDetail(Map<String, dynamic> meditation) {
+    HapticFeedback.lightImpact();
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MeditationDetailScreen(
+          title: meditation['title'],
+          description: meditation['description'],
+          duration: meditation['duration'],
+          audioUrl: meditation['audioUrl'],
+          imageUrl: meditation['imageUrl'],
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFF1A1A2E),
       appBar: AppBar(
-        title: const Text('Meditation Library'),
-        backgroundColor: const Color(0xFF6B4EFF),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: const Text(
+          'Meditation Library',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.filter_list, color: Colors.white),
+            onPressed: () {
+              _showFilterBottomSheet();
+            },
+          ),
+        ],
       ),
       body: Column(
         children: [
-          // Filters
-          Container(
-            height: 120,
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                // Type filter
-                SizedBox(
-                  height: 40,
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      _buildFilterChip('All Types', null, _selectedType,
-                          (val) => _selectedType = val),
-                      ..._types.map((type) => _buildFilterChip(
-                            _formatType(type),
-                            type,
-                            _selectedType,
-                            (val) => _selectedType = val,
-                          )),
-                    ],
-                  ),
+          // Search Bar
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: TextField(
+              controller: _searchController,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Search meditations...',
+                hintStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
-                const SizedBox(height: 8),
-                // Level filter
-                Row(
-                  children: [
-                    _buildFilterChip('All Levels', null, _selectedLevel,
-                        (val) => _selectedLevel = val),
-                    ..._levels.map((level) => _buildFilterChip(
-                          _formatLevel(level),
-                          level,
-                          _selectedLevel,
-                          (val) => _selectedLevel = val,
-                        )),
-                  ],
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: Colors.white.withValues(alpha: 0.6),
                 ),
-              ],
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: Icon(
+                          Icons.clear,
+                          color: Colors.white.withValues(alpha: 0.6),
+                        ),
+                        onPressed: () {
+                          _searchController.clear();
+                          _searchQuery = '';
+                          _filterMeditations();
+                        },
+                      )
+                    : null,
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.1),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                });
+                _filterMeditations();
+              },
             ),
           ),
 
-          // Meditation list
+          // Category Tabs
+          TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            indicatorColor: Colors.blue,
+            labelColor: Colors.blue,
+            unselectedLabelColor: Colors.white.withValues(alpha: 0.6),
+            onTap: (index) {
+              _filterMeditations();
+            },
+            tabs: _categories.map((category) => Tab(text: category)).toList(),
+          ),
+
+          const SizedBox(height: 16),
+
+          // Meditation Grid
           Expanded(
             child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _meditations.length,
-                    itemBuilder: (context, index) {
-                      final meditation = _meditations[index];
-                      return _buildMeditationCard(meditation);
-                    },
-                  ),
+                ? const Center(
+                    child: CircularProgressIndicator(
+                      valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                    ),
+                  )
+                : _filteredMeditations.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.search_off,
+                              size: 64,
+                              color: Colors.white.withValues(alpha: 0.4),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              'No meditations found',
+                              style: TextStyle(
+                                fontSize: 18,
+                                color: Colors.white.withValues(alpha: 0.6),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Try adjusting your search or filters',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white.withValues(alpha: 0.4),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: GridView.builder(
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.75,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                          itemCount: _filteredMeditations.length,
+                          itemBuilder: (context, index) {
+                            final meditation = _filteredMeditations[index];
+                            return MeditationCard(
+                              meditation: meditation,
+                              onTap: () =>
+                                  _navigateToMeditationDetail(meditation),
+                            );
+                          },
+                        ),
+                      ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildFilterChip(String label, String? value, String? groupValue,
-      Function(String?) onSelected) {
-    final isSelected = value == groupValue;
-    return Padding(
-      padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        label: Text(label),
-        selected: isSelected,
-        onSelected: (selected) {
-          setState(() {
-            onSelected(selected ? value : null);
-            _loadMeditations();
-          });
-        },
-        selectedColor: const Color(0xFF6B4EFF).withOpacity(0.2),
-        checkmarkColor: const Color(0xFF6B4EFF),
+  void _showFilterBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF2D2D44),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-    );
-  }
-
-  Widget _buildMeditationCard(Meditation meditation) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MeditationDetailScreen(
-                meditation: meditation,
-              ),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icon
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: _getTypeColor(meditation.type).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  _getTypeIcon(meditation.type),
-                  color: _getTypeColor(meditation.type),
-                  size: 30,
+              const Text(
+                'Filter Meditations',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
-              const SizedBox(width: 16),
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      meditation.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        _buildTag(_formatLevel(meditation.level),
-                            _getLevelColor(meditation.level)),
-                        const SizedBox(width: 8),
-                        _buildTag(
-                            '${meditation.durationMinutes} min', Colors.grey),
-                        const SizedBox(width: 8),
-                        if (meditation.effectivenessScore >= 0.8)
-                          _buildTag('Highly Rated', Colors.green),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      meditation.description,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+              const SizedBox(height: 20),
+              // Add filter options here
+              const Text(
+                'Coming soon: Duration, Difficulty, and Rating filters',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 16,
                 ),
               ),
-              // Arrow
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey[400],
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Apply Filters',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
               ),
             ],
           ),
-        ),
-      ),
+        );
+      },
     );
-  }
-
-  Widget _buildTag(String label, Color color) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          color: color,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-
-  String _formatType(String type) {
-    return type.replaceAll('_', ' ').split(' ').map((word) {
-      return word[0].toUpperCase() + word.substring(1);
-    }).join(' ');
-  }
-
-  String _formatLevel(String level) {
-    return level[0].toUpperCase() + level.substring(1);
-  }
-
-  Color _getTypeColor(String type) {
-    final colors = {
-      'breathing': Colors.blue,
-      'mindfulness': Colors.purple,
-      'body_scan': Colors.orange,
-      'loving_kindness': Colors.pink,
-      'visualization': Colors.teal,
-      'movement': Colors.green,
-      'mantra': Colors.indigo,
-      'zen': Colors.deepPurple,
-    };
-    return colors[type] ?? Colors.grey;
-  }
-
-  IconData _getTypeIcon(String type) {
-    final icons = {
-      'breathing': Icons.air,
-      'mindfulness': Icons.psychology,
-      'body_scan': Icons.accessibility_new,
-      'loving_kindness': Icons.favorite,
-      'visualization': Icons.landscape,
-      'movement': Icons.directions_walk,
-      'mantra': Icons.music_note,
-      'zen': Icons.spa,
-    };
-    return icons[type] ?? Icons.self_improvement;
-  }
-
-  Color _getLevelColor(String level) {
-    final colors = {
-      'beginner': Colors.green,
-      'intermediate': Colors.orange,
-      'advanced': Colors.red,
-    };
-    return colors[level] ?? Colors.grey;
   }
 }

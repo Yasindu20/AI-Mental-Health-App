@@ -1,362 +1,271 @@
-// frontend/lib/widgets/meditation_recommendation_card.dart
 import 'package:flutter/material.dart';
-import '../models/meditation_models.dart';
+import 'package:flutter/services.dart';
 import '../screens/meditation_detail_screen.dart';
 
 class MeditationRecommendationCard extends StatelessWidget {
-  final List<MeditationRecommendation> recommendations;
-  final MentalStateAnalysis? analysis;
-  final VoidCallback onDismiss;
+  final Map<String, dynamic> meditation;
+  final VoidCallback? onFavoriteToggle;
 
   const MeditationRecommendationCard({
     Key? key,
-    required this.recommendations,
-    this.analysis,
-    required this.onDismiss,
+    required this.meditation,
+    this.onFavoriteToggle,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(right: 16),
+      width: 280,
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF6B4EFF).withOpacity(0.05),
-            const Color(0xFF8B6BFF).withOpacity(0.05),
+            Colors.blue.withValues(alpha: 0.1),
+            Colors.purple.withValues(alpha: 0.1),
+            Colors.indigo.withValues(alpha: 0.1),
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: const Color(0xFF6B4EFF).withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.1),
+          width: 1,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header
-          Padding(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _navigateToDetail(context),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF6B4EFF).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Icon(
-                    Icons.auto_awesome,
-                    color: Color(0xFF6B4EFF),
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Personalized Recommendations',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (analysis != null)
-                        Text(
-                          'Based on ${_formatConcern(analysis!.primaryConcern)}',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: onDismiss,
-                  color: Colors.grey,
-                ),
-              ],
-            ),
-          ),
-
-          // Mental state summary
-          if (analysis != null)
-            Container(
-              margin: const EdgeInsets.symmetric(horizontal: 16),
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _buildStatItem(
-                    'Stress',
-                    analysis!.stressLevel,
-                    Colors.orange,
-                  ),
-                  _buildStatItem(
-                    'Anxiety',
-                    analysis!.anxietyLevel,
-                    Colors.purple,
-                  ),
-                  _buildStatItem(
-                    'Mood',
-                    10 - analysis!.depressionLevel,
-                    Colors.blue,
-                  ),
-                ],
-              ),
-            ),
-
-          const SizedBox(height: 16),
-
-          // Recommendations list
-          ...recommendations.take(3).map((rec) => _buildRecommendationItem(
-                context,
-                rec,
-              )),
-
-          // View all button
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: SizedBox(
-              width: double.infinity,
-              child: OutlinedButton(
-                onPressed: () {
-                  // Navigate to full recommendations
-                  Navigator.pushNamed(context, '/recommendations');
-                },
-                style: OutlinedButton.styleFrom(
-                  side: const BorderSide(color: Color(0xFF6B4EFF)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: const Text('View All Recommendations'),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, double value, Color color) {
-    return Column(
-      children: [
-        Stack(
-          alignment: Alignment.center,
-          children: [
-            SizedBox(
-              width: 50,
-              height: 50,
-              child: CircularProgressIndicator(
-                value: value / 10,
-                backgroundColor: Colors.grey[200],
-                valueColor: AlwaysStoppedAnimation<Color>(color),
-                strokeWidth: 6,
-              ),
-            ),
-            Text(
-              value.toStringAsFixed(1),
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildRecommendationItem(
-    BuildContext context,
-    MeditationRecommendation rec,
-  ) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MeditationDetailScreen(
-                meditation: rec.meditation,
-                recommendation: rec,
-              ),
-            ),
-          );
-        },
-        borderRadius: BorderRadius.circular(12),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              // Type icon
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: _getTypeColor(rec.meditation.type).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  _getTypeIcon(rec.meditation.type),
-                  color: _getTypeColor(rec.meditation.type),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // Content
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // Header with favorite button
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      rec.meditation.name,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      rec.reason,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.timer,
-                          size: 16,
-                          color: Colors.grey[400],
+                      child: Text(
+                        meditation['category'] ?? 'Meditation',
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${rec.meditation.durationMinutes} min',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        onFavoriteToggle?.call();
+                      },
+                      icon: Icon(
+                        meditation['isFavorite'] == true
+                            ? Icons.favorite
+                            : Icons.favorite_border,
+                        color: meditation['isFavorite'] == true
+                            ? Colors.red
+                            : Colors.white.withValues(alpha: 0.6),
+                        size: 24,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 12),
+
+                // Meditation Image
+                Container(
+                  height: 120,
+                  width: double.infinity,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    image: DecorationImage(
+                      image: NetworkImage(
+                        meditation['imageUrl'] ??
+                            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500',
+                      ),
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.transparent,
+                          Colors.black.withValues(alpha: 0.3),
+                        ],
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Play button overlay
+                        Center(
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.9),
+                              borderRadius: BorderRadius.circular(24),
+                            ),
+                            child: const Icon(
+                              Icons.play_arrow,
+                              color: Colors.black87,
+                              size: 28,
+                            ),
                           ),
                         ),
-                        const SizedBox(width: 12),
-                        Icon(
-                          Icons.signal_cellular_4_bar,
-                          size: 16,
-                          color: Colors.grey[400],
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _formatLevel(rec.meditation.level),
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
+                        // Duration badge
+                        Positioned(
+                          bottom: 8,
+                          right: 8,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black.withValues(alpha: 0.7),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              meditation['duration'] ?? '10 min',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ),
                       ],
                     ),
+                  ),
+                ),
+
+                const SizedBox(height: 12),
+
+                // Title
+                Text(
+                  meditation['title'] ?? 'Untitled Meditation',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+
+                const SizedBox(height: 6),
+
+                // Description
+                Text(
+                  meditation['description'] ?? 'A peaceful meditation session.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withValues(alpha: 0.7),
+                    height: 1.4,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+
+                const SizedBox(height: 12),
+
+                // Rating and difficulty
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.star,
+                          color: Colors.amber,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${meditation['rating'] ?? 4.5}',
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getDifficultyColor(meditation['difficulty']),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        meditation['difficulty'] ?? 'Beginner',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
-              ),
-              // Match score
-              Column(
-                children: [
-                  Text(
-                    '${(rec.relevanceScore * 100).toInt()}%',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: _getScoreColor(rec.relevanceScore),
-                    ),
-                  ),
-                  Text(
-                    'Match',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  String _formatConcern(String concern) {
-    return concern.replaceAll('_', ' ');
+  Color _getDifficultyColor(String? difficulty) {
+    switch (difficulty?.toLowerCase()) {
+      case 'beginner':
+        return Colors.green.withValues(alpha: 0.7);
+      case 'intermediate':
+        return Colors.orange.withValues(alpha: 0.7);
+      case 'advanced':
+        return Colors.red.withValues(alpha: 0.7);
+      default:
+        return Colors.blue.withValues(alpha: 0.7);
+    }
   }
 
-  String _formatLevel(String level) {
-    return level[0].toUpperCase() + level.substring(1);
-  }
+  void _navigateToDetail(BuildContext context) {
+    HapticFeedback.lightImpact();
 
-  Color _getTypeColor(String type) {
-    final colors = {
-      'breathing': Colors.blue,
-      'mindfulness': Colors.purple,
-      'body_scan': Colors.orange,
-      'loving_kindness': Colors.pink,
-      'visualization': Colors.teal,
-      'movement': Colors.green,
-    };
-    return colors[type] ?? Colors.grey;
-  }
-
-  IconData _getTypeIcon(String type) {
-    final icons = {
-      'breathing': Icons.air,
-      'mindfulness': Icons.psychology,
-      'body_scan': Icons.accessibility_new,
-      'loving_kindness': Icons.favorite,
-      'visualization': Icons.landscape,
-      'movement': Icons.directions_walk,
-    };
-    return icons[type] ?? Icons.self_improvement;
-  }
-
-  Color _getScoreColor(double score) {
-    if (score >= 0.8) return Colors.green;
-    if (score >= 0.6) return Colors.orange;
-    return Colors.red;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MeditationDetailScreen(
+          title: meditation['title'] ?? 'Untitled Meditation',
+          description:
+              meditation['description'] ?? 'A peaceful meditation session.',
+          duration: meditation['duration'] ?? '10 min',
+          audioUrl: meditation['audioUrl'] ?? '',
+          imageUrl: meditation['imageUrl'] ??
+              'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500',
+        ),
+      ),
+    );
   }
 }

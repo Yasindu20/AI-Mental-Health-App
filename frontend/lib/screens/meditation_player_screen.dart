@@ -1,19 +1,18 @@
-// frontend/lib/screens/meditation_player_screen.dart
 import 'package:flutter/material.dart';
-import 'dart:async';
-import '../models/meditation_models.dart';
-import '../services/meditation_service.dart';
+import 'package:flutter/services.dart';
 
 class MeditationPlayerScreen extends StatefulWidget {
-  final Meditation meditation;
-  final String? personalizedScript;
-  final int sessionId;
+  final String title;
+  final String audioUrl;
+  final String imageUrl;
+  final String duration;
 
   const MeditationPlayerScreen({
     Key? key,
-    required this.meditation,
-    this.personalizedScript,
-    required this.sessionId,
+    required this.title,
+    required this.audioUrl,
+    required this.imageUrl,
+    required this.duration,
   }) : super(key: key);
 
   @override
@@ -21,207 +20,307 @@ class MeditationPlayerScreen extends StatefulWidget {
 }
 
 class _MeditationPlayerScreenState extends State<MeditationPlayerScreen>
-    with SingleTickerProviderStateMixin {
-  late Timer _timer;
-  int _secondsElapsed = 0;
+    with TickerProviderStateMixin {
   bool _isPlaying = false;
-  bool _isCompleted = false;
-  late AnimationController _breathingController;
-  double _completionPercentage = 0;
+  double _currentPosition = 0.0;
+  double _totalDuration = 600.0; // 10 minutes in seconds
+  late AnimationController _breathingAnimationController;
+  late AnimationController _progressAnimationController;
+  late Animation<double> _breathingAnimation;
 
   @override
   void initState() {
     super.initState();
-    _breathingController = AnimationController(
+    _initializeAnimations();
+    _parseDuration();
+  }
+
+  void _initializeAnimations() {
+    _breathingAnimationController = AnimationController(
       duration: const Duration(seconds: 4),
       vsync: this,
-    )..repeat(reverse: true);
-    _startMeditation();
+    );
+
+    _progressAnimationController = AnimationController(
+      duration: Duration(seconds: _totalDuration.toInt()),
+      vsync: this,
+    );
+
+    _breathingAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.2,
+    ).animate(CurvedAnimation(
+      parent: _breathingAnimationController,
+      curve: Curves.easeInOut,
+    ));
+
+    _breathingAnimationController.repeat(reverse: true);
+  }
+
+  void _parseDuration() {
+    String durationStr = widget.duration.replaceAll(' min', '');
+    int minutes = int.tryParse(durationStr) ?? 10;
+    _totalDuration = minutes * 60.0;
   }
 
   @override
   void dispose() {
-    _timer.cancel();
-    _breathingController.dispose();
+    _breathingAnimationController.dispose();
+    _progressAnimationController.dispose();
     super.dispose();
   }
 
-  void _startMeditation() {
-    setState(() => _isPlaying = true);
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      setState(() {
-        _secondsElapsed++;
-        _completionPercentage =
-            (_secondsElapsed / (widget.meditation.durationMinutes * 60)) * 100;
-
-        if (_completionPercentage >= 100) {
-          _completionPercentage = 100;
-          _isCompleted = true;
-          _isPlaying = false;
-          timer.cancel();
-          _showCompletionDialog();
-        }
-      });
-    });
-  }
-
   void _togglePlayPause() {
+    HapticFeedback.lightImpact();
     setState(() {
       _isPlaying = !_isPlaying;
-      if (_isPlaying) {
-        _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          setState(() {
-            _secondsElapsed++;
-            _completionPercentage =
-                (_secondsElapsed / (widget.meditation.durationMinutes * 60)) *
-                    100;
-          });
-        });
-      } else {
-        _timer.cancel();
-      }
     });
+
+    if (_isPlaying) {
+      _progressAnimationController.forward();
+    } else {
+      _progressAnimationController.stop();
+    }
   }
 
-  void _showCompletionDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => _CompletionDialog(
-        sessionId: widget.sessionId,
-        onComplete: () => Navigator.of(context).popUntil(
-          ModalRoute.withName('/home'),
-        ),
-      ),
-    );
+  void _seekTo(double position) {
+    setState(() {
+      _currentPosition = position;
+    });
+    _progressAnimationController.animateTo(position / _totalDuration);
+  }
+
+  String _formatTime(double seconds) {
+    int minutes = (seconds / 60).floor();
+    int remainingSeconds = (seconds % 60).floor();
+    return '${minutes.toString().padLeft(2, '0')}:${remainingSeconds.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
-    final minutes = _secondsElapsed ~/ 60;
-    final seconds = _secondsElapsed % 60;
-
     return Scaffold(
       backgroundColor: const Color(0xFF1A1A2E),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(widget.meditation.name),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: Text(
+          'Now Playing',
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.9),
+            fontSize: 18,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert, color: Colors.white),
+            onPressed: () => _showOptionsMenu(context),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Breathing animation
-              if (widget.meditation.type == 'breathing')
-                _buildBreathingAnimation(),
+              const SizedBox(height: 20),
 
-              const SizedBox(height: 48),
-
-              // Timer
-              Text(
-                '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
-                style: const TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.white,
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              // Progress bar
-              LinearProgressIndicator(
-                value: _completionPercentage / 100,
-                backgroundColor: Colors.white24,
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  Color(0xFF6B4EFF),
-                ),
-              ),
-
-              const SizedBox(height: 48),
-
-              // Instructions or script
+              // Album Art with Animation
               Expanded(
-                child: SingleChildScrollView(
-                  child: Text(
-                    widget.personalizedScript ??
-                        widget.meditation.instructions.join('\n\n'),
-                    style: const TextStyle(
-                      fontSize: 18,
-                      height: 1.6,
-                      color: Colors.white70,
-                    ),
-                    textAlign: TextAlign.center,
+                flex: 2,
+                child: Center(
+                  child: AnimatedBuilder(
+                    animation: _breathingAnimation,
+                    builder: (context, child) {
+                      return Transform.scale(
+                        scale: _isPlaying ? _breathingAnimation.value : 1.0,
+                        child: Container(
+                          width: 280,
+                          height: 280,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withValues(alpha: 0.3),
+                                blurRadius: 30,
+                                offset: const Offset(0, 10),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.network(
+                              widget.imageUrl,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Colors.blue.withValues(alpha: 0.3),
+                                        Colors.purple.withValues(alpha: 0.3),
+                                      ],
+                                    ),
+                                  ),
+                                  child: const Icon(
+                                    Icons.self_improvement,
+                                    size: 80,
+                                    color: Colors.white,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
 
-              const SizedBox(height: 48),
+              const SizedBox(height: 40),
 
-              // Control buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Skip backward
-                  IconButton(
-                    icon: const Icon(Icons.replay_10, size: 32),
-                    color: Colors.white54,
-                    onPressed: () {
-                      setState(() {
-                        _secondsElapsed =
-                            (_secondsElapsed - 10).clamp(0, 99999);
-                      });
-                    },
-                  ),
-                  const SizedBox(width: 24),
+              // Title and Info
+              Expanded(
+                flex: 1,
+                child: Column(
+                  children: [
+                    Text(
+                      widget.title,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
 
-                  // Play/Pause
-                  Container(
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
+                    const SizedBox(height: 8),
+
+                    Text(
+                      'Guided Meditation',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withValues(alpha: 0.7),
                       ),
                     ),
-                    child: IconButton(
-                      icon: Icon(
-                        _isPlaying ? Icons.pause : Icons.play_arrow,
-                        size: 48,
-                      ),
-                      color: Colors.white,
-                      padding: const EdgeInsets.all(16),
-                      onPressed: _togglePlayPause,
+
+                    const SizedBox(height: 32),
+
+                    // Progress Bar
+                    Column(
+                      children: [
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: 4,
+                            thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 8,
+                            ),
+                            overlayShape: const RoundSliderOverlayShape(
+                              overlayRadius: 16,
+                            ),
+                            activeTrackColor: Colors.blue,
+                            inactiveTrackColor:
+                                Colors.white.withValues(alpha: 0.2),
+                            thumbColor: Colors.blue,
+                            overlayColor: Colors.blue.withValues(alpha: 0.2),
+                          ),
+                          child: Slider(
+                            value: _currentPosition,
+                            max: _totalDuration,
+                            onChanged: _seekTo,
+                          ),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _formatTime(_currentPosition),
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                _formatTime(_totalDuration),
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.7),
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 24),
 
-                  // Skip forward
-                  IconButton(
-                    icon: const Icon(Icons.forward_10, size: 32),
-                    color: Colors.white54,
-                    onPressed: () {
-                      setState(() {
-                        _secondsElapsed += 10;
-                      });
-                    },
-                  ),
-                ],
-              ),
+                    const SizedBox(height: 32),
 
-              const SizedBox(height: 24),
+                    // Control Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        // Previous/Rewind Button
+                        IconButton(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            _seekTo((_currentPosition - 30)
+                                .clamp(0, _totalDuration));
+                          },
+                          icon: const Icon(Icons.replay_30),
+                          color: Colors.white,
+                          iconSize: 32,
+                        ),
 
-              // End session button
-              TextButton(
-                onPressed: () {
-                  _timer.cancel();
-                  _showCompletionDialog();
-                },
-                child: const Text(
-                  'End Session',
-                  style: TextStyle(color: Colors.white54),
+                        // Play/Pause Button
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.blue,
+                            borderRadius: BorderRadius.circular(40),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withValues(alpha: 0.4),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: IconButton(
+                            onPressed: _togglePlayPause,
+                            icon: Icon(
+                              _isPlaying ? Icons.pause : Icons.play_arrow,
+                              size: 40,
+                            ),
+                            color: Colors.white,
+                          ),
+                        ),
+
+                        // Forward Button
+                        IconButton(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            _seekTo((_currentPosition + 30)
+                                .clamp(0, _totalDuration));
+                          },
+                          icon: const Icon(Icons.forward_30),
+                          color: Colors.white,
+                          iconSize: 32,
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -231,235 +330,65 @@ class _MeditationPlayerScreenState extends State<MeditationPlayerScreen>
     );
   }
 
-  Widget _buildBreathingAnimation() {
-    return AnimatedBuilder(
-      animation: _breathingController,
-      builder: (context, child) {
-        final scale = 1 + (_breathingController.value * 0.3);
+  void _showOptionsMenu(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF2D2D44),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
         return Container(
-          width: 150 * scale,
-          height: 150 * scale,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: RadialGradient(
-              colors: [
-                const Color(0xFF6B4EFF).withOpacity(0.3),
-                const Color(0xFF6B4EFF).withOpacity(0.1),
-                Colors.transparent,
-              ],
-              stops: const [0.0, 0.5, 1.0],
-            ),
-          ),
-          child: Center(
-            child: Text(
-              _breathingController.value < 0.5 ? 'Inhale' : 'Exhale',
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.w300,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Options',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-            ),
+              const SizedBox(height: 20),
+              ListTile(
+                leading: const Icon(Icons.timer, color: Colors.white),
+                title: const Text(
+                  'Sleep Timer',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Implement sleep timer
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.speed, color: Colors.white),
+                title: const Text(
+                  'Playback Speed',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Implement speed control
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.download, color: Colors.white),
+                title: const Text(
+                  'Download',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  // Implement download
+                },
+              ),
+            ],
           ),
         );
       },
-    );
-  }
-}
-
-class _CompletionDialog extends StatefulWidget {
-  final int sessionId;
-  final VoidCallback onComplete;
-
-  const _CompletionDialog({
-    Key? key,
-    required this.sessionId,
-    required this.onComplete,
-  }) : super(key: key);
-
-  @override
-  State<_CompletionDialog> createState() => _CompletionDialogState();
-}
-
-class _CompletionDialogState extends State<_CompletionDialog> {
-  int _moodScore = 5;
-  bool? _helpful;
-  final _notesController = TextEditingController();
-  bool _isLoading = false;
-
-  @override
-  void dispose() {
-    _notesController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _completeSession() async {
-    setState(() => _isLoading = true);
-
-    try {
-      final result = await MeditationService.completeSession(
-        sessionId: widget.sessionId,
-        moodScore: _moodScore,
-        completionPercentage: 100,
-        helpful: _helpful,
-        notes: _notesController.text,
-      );
-
-      // Show results
-      if (mounted) {
-        final improvement = result['session_stats']['mood_improvement'] ?? 0;
-        final message = improvement > 0
-            ? 'Great job! Your mood improved by $improvement points!'
-            : 'Well done on completing your session!';
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            backgroundColor: Colors.green,
-          ),
-        );
-
-        widget.onComplete();
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(
-              Icons.check_circle,
-              size: 64,
-              color: Colors.green,
-            ),
-            const SizedBox(height: 16),
-            const Text(
-              'Session Complete!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Mood rating
-            const Text(
-              'How do you feel now?',
-              style: TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: List.generate(10, (index) {
-                final score = index + 1;
-                return GestureDetector(
-                  onTap: () => setState(() => _moodScore = score),
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: score <= _moodScore
-                          ? const Color(0xFF6B4EFF)
-                          : Colors.grey[300],
-                    ),
-                    child: Center(
-                      child: Text(
-                        score.toString(),
-                        style: TextStyle(
-                          color: score <= _moodScore
-                              ? Colors.white
-                              : Colors.black54,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            ),
-
-            const SizedBox(height: 24),
-
-            // Helpful toggle
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Text('Was this helpful?'),
-                const SizedBox(width: 16),
-                ToggleButtons(
-                  borderRadius: BorderRadius.circular(8),
-                  selectedColor: Colors.white,
-                  fillColor: const Color(0xFF6B4EFF),
-                  children: const [
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('Yes'),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      child: Text('No'),
-                    ),
-                  ],
-                  isSelected: [_helpful == true, _helpful == false],
-                  onPressed: (index) {
-                    setState(() => _helpful = index == 0);
-                  },
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // Notes
-            TextField(
-              controller: _notesController,
-              decoration: const InputDecoration(
-                labelText: 'Notes (optional)',
-                hintText: 'How was your experience?',
-                border: OutlineInputBorder(),
-              ),
-              maxLines: 3,
-            ),
-
-            const SizedBox(height: 24),
-
-            // Submit button
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _completeSession,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : const Text('Complete'),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
