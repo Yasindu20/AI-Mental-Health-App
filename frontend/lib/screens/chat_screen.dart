@@ -4,8 +4,11 @@ import '../providers/chat_provider.dart';
 import '../widgets/message_bubble.dart';
 import '../widgets/typing_indicator.dart';
 import '../widgets/meditation_suggestion_card.dart';
+import '../widgets/recommendation_bottom_sheet.dart';
 import '../models/crisis_models.dart';
 import '../services/crisis_service.dart';
+import '../services/recommendation_service.dart';
+import '../models/meditation_recommendation.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({Key? key}) : super(key: key);
@@ -17,7 +20,6 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
-  // ignore: unused_field
   EmergencyContact? _primaryEmergencyContact;
 
   @override
@@ -32,10 +34,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _loadEmergencyContact() async {
     try {
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(const Duration(seconds: 1));
       final contacts = await CrisisService.getEmergencyContacts();
 
-      if (contacts.isNotEmpty) {
+      if (contacts.isNotEmpty && mounted) {
         setState(() {
           _primaryEmergencyContact = contacts.firstWhere(
             (c) => c.isPrimary,
@@ -47,6 +49,48 @@ class _ChatScreenState extends State<ChatScreen> {
       // Handle error silently
       debugPrint('Error loading emergency contacts: $e');
     }
+  }
+
+  Future<void> _getRecommendations() async {
+    try {
+      // Get conversation text from all messages
+      final provider = Provider.of<ChatProvider>(context, listen: false);
+      String conversationText =
+          provider.messages.map((message) => message.content).join(' ');
+
+      if (conversationText.trim().isEmpty) {
+        conversationText = _messageController.text;
+      }
+
+      List<MeditationRecommendation> recommendations =
+          await RecommendationService.getRecommendations(
+        conversationText: conversationText,
+      );
+
+      if (mounted) {
+        _showRecommendations(recommendations);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to get recommendations: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showRecommendations(List<MeditationRecommendation> recommendations) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => RecommendationBottomSheet(
+        recommendations: recommendations,
+      ),
+    );
   }
 
   @override
@@ -68,6 +112,10 @@ class _ChatScreenState extends State<ChatScreen> {
 
       if (!mounted) return;
       _scrollToBottom();
+
+      // Automatically get recommendations after sending a message
+      // You can comment this out if you don't want automatic recommendations
+      _getRecommendations();
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,6 +148,12 @@ class _ChatScreenState extends State<ChatScreen> {
         backgroundColor: const Color(0xFF6B4EFF),
         elevation: 0,
         actions: [
+          // Recommendations button
+          IconButton(
+            icon: const Icon(Icons.lightbulb_outline),
+            onPressed: _getRecommendations,
+            tooltip: 'Get Recommendations',
+          ),
           // Ollama connection status indicator
           Consumer<ChatProvider>(
             builder: (context, chatProvider, _) {
@@ -126,12 +180,12 @@ class _ChatScreenState extends State<ChatScreen> {
             builder: (context, chatProvider, _) {
               if (!chatProvider.ollamaConnected) {
                 return Container(
-                  color: Colors.orange.withOpacity(0.1),
+                  color: Colors.orange.withValues(alpha: 0.1),
                   padding: const EdgeInsets.all(8),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.warning, size: 16, color: Colors.orange),
+                      const Icon(Icons.warning, size: 16, color: Colors.orange),
                       const SizedBox(width: 8),
                       Text(
                         'AI service is offline - Please start Ollama',
@@ -196,7 +250,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 BoxShadow(
                   offset: const Offset(0, -2),
                   blurRadius: 4,
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                 ),
               ],
             ),
@@ -227,8 +281,8 @@ class _ChatScreenState extends State<ChatScreen> {
                   ),
                   const SizedBox(width: 12),
                   Container(
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
                         colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
                       ),
                       shape: BoxShape.circle,
@@ -251,8 +305,19 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _startMeditationSession(List<String> techniques) {
-    // TODO: Implement meditation session
-    // For now, just show a message
+    // Navigate to meditation player or start session
+    Navigator.pushNamed(
+      context,
+      '/meditation_player',
+      arguments: {
+        'title': '${techniques.first} Meditation',
+        'audioUrl': 'https://example.com/guided_meditation.mp3',
+        'imageUrl':
+            'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500',
+        'duration': '10 min',
+      },
+    );
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Starting ${techniques.first} meditation...'),
