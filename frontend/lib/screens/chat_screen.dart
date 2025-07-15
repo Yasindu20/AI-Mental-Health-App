@@ -5,8 +5,6 @@ import '../widgets/message_bubble.dart';
 import '../widgets/typing_indicator.dart';
 import '../widgets/meditation_suggestion_card.dart';
 import '../widgets/recommendation_bottom_sheet.dart';
-import '../models/crisis_models.dart';
-import '../services/crisis_service.dart';
 import '../services/recommendation_service.dart';
 import '../models/meditation_recommendation.dart';
 
@@ -20,35 +18,14 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
-  EmergencyContact? _primaryEmergencyContact;
 
   @override
   void initState() {
     super.initState();
-    _loadEmergencyContact();
     // Check Ollama status when screen loads
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ChatProvider>(context, listen: false).checkOllamaStatus();
     });
-  }
-
-  Future<void> _loadEmergencyContact() async {
-    try {
-      await Future.delayed(const Duration(seconds: 1));
-      final contacts = await CrisisService.getEmergencyContacts();
-
-      if (contacts.isNotEmpty && mounted) {
-        setState(() {
-          _primaryEmergencyContact = contacts.firstWhere(
-            (c) => c.isPrimary,
-            orElse: () => contacts.first,
-          );
-        });
-      }
-    } catch (e) {
-      // Handle error silently
-      debugPrint('Error loading emergency contacts: $e');
-    }
   }
 
   Future<void> _getRecommendations() async {
@@ -114,7 +91,6 @@ class _ChatScreenState extends State<ChatScreen> {
       _scrollToBottom();
 
       // Automatically get recommendations after sending a message
-      // You can comment this out if you don't want automatic recommendations
       _getRecommendations();
     } catch (e) {
       if (!mounted) return;
