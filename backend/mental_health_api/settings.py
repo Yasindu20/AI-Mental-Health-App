@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'ai_engine',
     'crisis_detection',
     'ollama_integration',
+    'meditation',
 ]
 
 OLLAMA_CONFIG = {

@@ -1,0 +1,144 @@
+[
+  {
+    "model": "meditation.meditation",
+    "fields": {
+      "name": "Calm Breathing for Anxiety",
+      "type": "breathing",
+      "level": "beginner",
+      "duration_minutes": 10,
+      "description": "A gentle breathing exercise designed to calm racing thoughts and reduce anxiety symptoms.",
+      "instructions": [
+        "Find a comfortable seated position with your back straight but relaxed.",
+        "Close your eyes or soften your gaze downward.",
+        "Take a deep breath in through your nose for 4 counts.",
+        "Hold your breath gently for 4 counts.",
+        "Exhale slowly through your mouth for 6 counts.",
+        "Repeat this cycle for the duration of the meditation."
+      ],
+      "benefits": [
+        "Activates parasympathetic nervous system",
+        "Reduces cortisol levels",
+        "Slows racing thoughts",
+        "Improves emotional regulation"
+      ],
+      "target_states": ["anxiety", "panic", "stress"],
+      "tags": ["calming", "quick", "evidence-based"],
+      "effectiveness_score": 0.85
+    }
+  },
+  {
+    "model": "meditation.meditation",
+    "fields": {
+      "name": "Loving-Kindness for Depression",
+      "type": "loving_kindness",
+      "level": "intermediate",
+      "duration_minutes": 20,
+      "description": "Cultivate self-compassion and connection to counter depressive thoughts and isolation.",
+      "instructions": [
+        "Begin by finding a comfortable position and closing your eyes.",
+        "Place your hand on your heart and feel the gentle pressure.",
+        "Start by offering loving-kindness to yourself: 'May I be happy. May I be healthy. May I be safe. May I live with ease.'",
+        "Next, think of someone you love easily and extend the same wishes to them.",
+        "Then include a neutral person, someone you neither like nor dislike.",
+        "Finally, extend these wishes to all beings everywhere.",
+        "If difficult emotions arise, return to offering kindness to yourself."
+      ],
+      "benefits": [
+        "Increases self-compassion",
+        "Reduces negative self-talk",
+        "Enhances social connection",
+        "Boosts mood and positive emotions"
+      ],
+      "target_states": ["depression", "loneliness", "self_esteem"],
+      "tags": ["compassion", "healing", "connection"],
+      "effectiveness_score": 0.82
+    }
+  },
+  {
+    "model": "meditation.meditation",
+    "fields": {
+      "name": "Progressive Body Scan for Stress",
+      "type": "body_scan",
+      "level": "beginner",
+      "duration_minutes": 15,
+      "description": "Systematically release tension throughout your body to relieve stress and promote relaxation.",
+      "instructions": [
+        "Lie down in a comfortable position with arms at your sides.",
+        "Close your eyes and take three deep breaths.",
+        "Begin with your toes, noticing any sensations without judgment.",
+        "Consciously relax your toes, then move to your feet.",
+        "Continue this process up through your legs, torso, arms, and head.",
+        "Spend about 30 seconds on each body part.",
+        "If you notice tension, breathe into that area and let it soften.",
+        "End by feeling your whole body relaxed and at ease."
+      ],
+      "benefits": [
+        "Releases physical tension",
+        "Improves body awareness",
+        "Reduces stress hormones",
+        "Promotes better sleep"
+      ],
+      "target_states": ["stress", "insomnia", "anxiety"],
+      "tags": ["relaxation", "tension-release", "grounding"],
+      "effectiveness_score": 0.88
+    }
+  },
+  {
+    "model": "meditation.meditation",
+    "fields": {
+      "name": "Mindful Movement for Anger",
+      "type": "movement",
+      "level": "beginner",
+      "duration_minutes": 12,
+      "description": "Channel intense emotions through gentle, mindful movement to find balance and calm.",
+      "instructions": [
+        "Stand with feet hip-width apart, knees slightly bent.",
+        "Begin by shaking your hands gently, then more vigorously.",
+        "Let the shaking move up your arms and through your whole body.",
+        "After 2 minutes, slow down and come to stillness.",
+        "Place your hands on your belly and take 5 deep breaths.",
+        "Begin slow, flowing arm movements, like moving through water.",
+        "Focus on the sensations of movement rather than thoughts.",
+        "End in stillness, noticing how your body feels now."
+      ],
+      "benefits": [
+        "Releases pent-up energy",
+        "Shifts emotional state",
+        "Improves emotional regulation",
+        "Increases body awareness"
+      ],
+      "target_states": ["anger", "frustration", "restlessness"],
+      "tags": ["active", "release", "grounding"],
+      "effectiveness_score": 0.79
+    }
+  },
+  {
+    "model": "meditation.meditation",
+    "fields": {
+      "name": "Zen Breathing for Focus",
+      "type": "zen",
+      "level": "advanced",
+      "duration_minutes": 25,
+      "description": "Traditional Zen meditation to sharpen concentration and mental clarity.",
+      "instructions": [
+        "Sit in a comfortable upright position, either cross-legged or in a chair.",
+        "Keep your eyes half-open with a soft downward gaze.",
+        "Place your dominant hand on top of the other, thumbs lightly touching.",
+        "Begin counting your breaths: inhale (1), exhale (2), up to 10, then start again.",
+        "When you lose count, simply return to 1 without judgment.",
+        "After 10 minutes, stop counting and just follow the breath.",
+        "If thoughts arise, acknowledge them and return to the breath.",
+        "Maintain this focused awareness for the remainder of the session."
+      ],
+      "benefits": [
+        "Enhances concentration",
+        "Improves mental clarity",
+        "Develops equanimity",
+        "Strengthens mindfulness"
+      ],
+      "target_states": ["focus", "anxiety", "stress"],
+      "tags": ["traditional", "concentration", "clarity"],
+      "effectiveness_score": 0.83
+    }
+  }
+]

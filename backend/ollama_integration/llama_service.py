@@ -6,7 +6,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-class llamaService:
+class LlamaService:
     """Service for handling Ollama API interactions"""
     
     def __init__(self):
@@ -298,4 +298,4 @@ Key principles:
             yield "I'm here to support you. Let's take this moment together."
 
 # Create singleton instance
-ollama_service = llamaService()
+ollama_service = LlamaService()
