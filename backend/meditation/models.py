@@ -61,6 +61,33 @@ class Meditation(models.Model):
     
     def __str__(self):
         return f"{self.name} ({self.level} - {self.duration_minutes}min)"
+    
+    # New fields for richer content
+    instructor_name = models.CharField(max_length=200, blank=True)
+    instructor_bio = models.TextField(blank=True)
+    background_music_url = models.URLField(blank=True)
+    thumbnail_url = models.URLField(blank=True)
+    
+    # Content source tracking
+    source = models.CharField(max_length=50, choices=[
+        ('original', 'Original Content'),
+        ('curated', 'Curated Content'),
+        ('community', 'Community Submission'),
+        ('api', 'External API'),
+    ], default='original')
+    
+    # Detailed categorization
+    subcategory = models.CharField(max_length=100, blank=True)
+    keywords = models.JSONField(default=list)  # For better search
+    
+    # Engagement metrics
+    times_played = models.IntegerField(default=0)
+    average_rating = models.FloatField(default=0.0)
+    total_ratings = models.IntegerField(default=0)
+    
+    # Timestamps
+    published_date = models.DateTimeField(auto_now_add=True)
+    last_updated = models.DateTimeField(auto_now=True)
 
 class UserMentalStateAnalysis(models.Model):
     """Analysis of user's mental state from conversation"""
