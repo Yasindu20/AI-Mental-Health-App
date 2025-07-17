@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/meditation_provider.dart';
-import '../models/meditation_models.dart';
 import '../widgets/meditation_card_enhanced.dart';
 import '../widgets/filter_bottom_sheet.dart';
 
