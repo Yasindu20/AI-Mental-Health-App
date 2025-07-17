@@ -38,6 +38,8 @@ class MeditationProvider extends ChangeNotifier {
   List<String> get levels => ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
   Future<void> loadMeditations() async {
+    if (_isLoading) return; // Prevent multiple simultaneous loads
+
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -45,8 +47,17 @@ class MeditationProvider extends ChangeNotifier {
     try {
       _meditations = await MeditationService.browseMeditations();
       _applyFilters();
+      print('Loaded ${_meditations.length} meditations');
     } catch (e) {
-      _error = 'Failed to load meditations: ${e.toString()}';
+      _error = e.toString();
+      print('Error loading meditations: $e');
+
+      // If it's an auth error, provide specific message
+      if (e.toString().contains('Authentication')) {
+        _error = 'Please login to view meditations';
+      } else if (e.toString().contains('401')) {
+        _error = 'Session expired. Please login again.';
+      }
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -57,24 +68,34 @@ class MeditationProvider extends ChangeNotifier {
     try {
       _stats = await MeditationService.getUserStats();
       notifyListeners();
+      print('Stats loaded: ${_stats?.totalSessions} sessions');
     } catch (e) {
-      debugPrint('Failed to load stats: $e');
+      print('Failed to load stats: $e');
+      // Set default stats instead of failing
+      _stats = UserMeditationStats.defaultStats();
+      notifyListeners();
     }
   }
 
   void setCategory(String category) {
-    _selectedCategory = category;
-    _applyFilters();
+    if (_selectedCategory != category) {
+      _selectedCategory = category;
+      _applyFilters();
+    }
   }
 
   void setLevel(String level) {
-    _selectedLevel = level;
-    _applyFilters();
+    if (_selectedLevel != level) {
+      _selectedLevel = level;
+      _applyFilters();
+    }
   }
 
   void setSearchQuery(String query) {
-    _searchQuery = query;
-    _applyFilters();
+    if (_searchQuery != query) {
+      _searchQuery = query;
+      _applyFilters();
+    }
   }
 
   void _applyFilters() {
@@ -83,7 +104,7 @@ class MeditationProvider extends ChangeNotifier {
       bool matchesCategory = _selectedCategory == 'All' ||
           meditation.type
               .toLowerCase()
-              .contains(_selectedCategory.toLowerCase()) ||
+              .contains(_selectedCategory.toLowerCase().replaceAll(' ', '_')) ||
           meditation.targetStates.any((state) =>
               state.toLowerCase().contains(_selectedCategory.toLowerCase()));
 
@@ -105,8 +126,8 @@ class MeditationProvider extends ChangeNotifier {
 
     // Sort by effectiveness and popularity
     _filteredMeditations.sort((a, b) {
-      final scoreA = a.effectivenessScore * 0.7 + (a.effectivenessScore * 0.3);
-      final scoreB = b.effectivenessScore * 0.7 + (b.effectivenessScore * 0.3);
+      final scoreA = a.effectivenessScore;
+      final scoreB = b.effectivenessScore;
       return scoreB.compareTo(scoreA);
     });
 
@@ -118,5 +139,15 @@ class MeditationProvider extends ChangeNotifier {
     _selectedLevel = 'All';
     _searchQuery = '';
     _applyFilters();
+  }
+
+  void clearError() {
+    _error = null;
+    notifyListeners();
+  }
+
+  Future<void> retry() async {
+    clearError();
+    await loadMeditations();
   }
 }

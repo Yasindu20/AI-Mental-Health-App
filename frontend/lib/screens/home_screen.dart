@@ -19,156 +19,232 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<MeditationProvider>(context, listen: false).loadStats();
+      _initializeData();
     });
+  }
+
+  Future<void> _initializeData() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final meditationProvider =
+        Provider.of<MeditationProvider>(context, listen: false);
+
+    // Check if user is authenticated
+    if (!authProvider.isAuthenticated) {
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+
+    // Load meditation stats
+    await meditationProvider.loadStats();
   }
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = Provider.of<AuthProvider>(context);
-    final meditationProvider = Provider.of<MeditationProvider>(context);
+    return Consumer2<AuthProvider, MeditationProvider>(
+      builder: (context, authProvider, meditationProvider, child) {
+        // Show loading if auth is still loading
+        if (authProvider.isLoading) {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
 
-    return Scaffold(
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            await meditationProvider.loadStats();
-          },
-          child: SingleChildScrollView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                _buildHeader(authProvider),
-                const SizedBox(height: 32),
+        // Redirect to login if not authenticated
+        if (!authProvider.isAuthenticated) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.pushReplacementNamed(context, '/login');
+          });
+          return const Scaffold(body: SizedBox());
+        }
 
-                // Stats Card
-                if (meditationProvider.stats != null)
-                  StatsCard(stats: meditationProvider.stats!),
-                const SizedBox(height: 24),
-
-                // Main Features
-                const Text(
-                  'How can I help you today?',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D2D2D),
-                  ),
-                ),
-                const SizedBox(height: 16),
-
-                Row(
+        return Scaffold(
+          body: SafeArea(
+            child: RefreshIndicator(
+              onRefresh: () async {
+                await meditationProvider.loadStats();
+              },
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      child: FeatureCard(
-                        icon: Icons.chat_bubble_outline,
-                        title: 'Talk to AI',
-                        subtitle: 'Share your thoughts',
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
-                        ),
-                        onTap: () {
-                          Provider.of<ChatProvider>(context, listen: false)
-                              .clearConversation();
-                          Navigator.pushNamed(context, '/chat');
-                        },
+                    // Header
+                    _buildHeader(authProvider),
+                    const SizedBox(height: 32),
+
+                    // Stats Card
+                    if (meditationProvider.stats != null)
+                      StatsCard(stats: meditationProvider.stats!)
+                    else
+                      _buildPlaceholderStats(),
+                    const SizedBox(height: 24),
+
+                    // Main Features
+                    const Text(
+                      'How can I help you today?',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D2D2D),
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: FeatureCard(
-                        icon: Icons.spa,
-                        title: 'Meditations',
-                        subtitle: 'Find your peace',
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FeatureCard(
+                            icon: Icons.chat_bubble_outline,
+                            title: 'Talk to AI',
+                            subtitle: 'Share your thoughts',
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
+                            ),
+                            onTap: () {
+                              Provider.of<ChatProvider>(context, listen: false)
+                                  .clearConversation();
+                              Navigator.pushNamed(context, '/chat');
+                            },
+                          ),
                         ),
-                        onTap: () {
-                          Navigator.pushNamed(context, '/meditation-library');
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: FeatureCard(
+                            icon: Icons.spa,
+                            title: 'Meditations',
+                            subtitle: 'Find your peace',
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                            ),
+                            onTap: () {
+                              Navigator.pushNamed(
+                                  context, '/meditation-library');
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Quick Actions
+                    const Text(
+                      'Quick Actions',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D2D2D),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    GridView.count(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      crossAxisCount: 2,
+                      mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      childAspectRatio: 1.5,
+                      children: [
+                        QuickActionCard(
+                          icon: Icons.psychology,
+                          title: 'Mood Check',
+                          color: Colors.orange,
+                          onTap: () {
+                            _showMoodCheckDialog(context);
+                          },
+                        ),
+                        QuickActionCard(
+                          icon: Icons.history,
+                          title: 'My Progress',
+                          color: Colors.blue,
+                          onTap: () {
+                            Navigator.pushNamed(context, '/profile');
+                          },
+                        ),
+                        QuickActionCard(
+                          icon: Icons.favorite,
+                          title: 'Favorites',
+                          color: Colors.red,
+                          onTap: () {
+                            Navigator.pushNamed(context, '/meditation-library');
+                          },
+                        ),
+                        QuickActionCard(
+                          icon: Icons.settings,
+                          title: 'Settings',
+                          color: Colors.grey,
+                          onTap: () {
+                            Navigator.pushNamed(context, '/settings');
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+
+                    // Logout
+                    Center(
+                      child: TextButton.icon(
+                        onPressed: () async {
+                          await authProvider.logout();
+                          if (!context.mounted) return;
+                          Navigator.pushReplacementNamed(context, '/login');
                         },
+                        icon: const Icon(Icons.logout, color: Colors.grey),
+                        label: const Text(
+                          'Logout',
+                          style: TextStyle(color: Colors.grey),
+                        ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
-
-                // Quick Actions
-                const Text(
-                  'Quick Actions',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D2D2D),
-                  ),
-                ),
-                const SizedBox(height: 12),
-
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.5,
-                  children: [
-                    QuickActionCard(
-                      icon: Icons.psychology,
-                      title: 'Mood Check',
-                      color: Colors.orange,
-                      onTap: () {
-                        _showMoodCheckDialog(context);
-                      },
-                    ),
-                    QuickActionCard(
-                      icon: Icons.history,
-                      title: 'My Progress',
-                      color: Colors.blue,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/profile');
-                      },
-                    ),
-                    QuickActionCard(
-                      icon: Icons.favorite,
-                      title: 'Favorites',
-                      color: Colors.red,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/meditation-library');
-                      },
-                    ),
-                    QuickActionCard(
-                      icon: Icons.settings,
-                      title: 'Settings',
-                      color: Colors.grey,
-                      onTap: () {
-                        Navigator.pushNamed(context, '/settings');
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 32),
-
-                // Logout
-                Center(
-                  child: TextButton.icon(
-                    onPressed: () async {
-                      await authProvider.logout();
-                      if (!context.mounted) return;
-                      Navigator.pushReplacementNamed(context, '/login');
-                    },
-                    icon: const Icon(Icons.logout, color: Colors.grey),
-                    label: const Text(
-                      'Logout',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildPlaceholderStats() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
         ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6B4EFF).withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: const Column(
+        children: [
+          Text(
+            'Welcome to Your Journey',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 16),
+          Text(
+            'Start your first meditation to see your progress here!',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

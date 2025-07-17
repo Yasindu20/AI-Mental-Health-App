@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/meditation_provider.dart';
+import '../providers/auth_provider.dart';
 import '../widgets/meditation_card_enhanced.dart';
 import '../widgets/filter_bottom_sheet.dart';
 
@@ -25,7 +26,7 @@ class _MeditationLibraryScreenState extends State<MeditationLibraryScreen>
         TabController(length: provider.categories.length, vsync: this);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      provider.loadMeditations();
+      _loadData();
     });
   }
 
@@ -34,6 +35,19 @@ class _MeditationLibraryScreenState extends State<MeditationLibraryScreen>
     _tabController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadData() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final meditationProvider =
+        Provider.of<MeditationProvider>(context, listen: false);
+
+    if (!authProvider.isAuthenticated) {
+      Navigator.pushReplacementNamed(context, '/login');
+      return;
+    }
+
+    await meditationProvider.loadMeditations();
   }
 
   @override
@@ -154,15 +168,33 @@ class _MeditationLibraryScreenState extends State<MeditationLibraryScreen>
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              provider.error!,
-              style: TextStyle(color: Colors.grey[600]),
-              textAlign: TextAlign.center,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 32),
+              child: Text(
+                provider.error!,
+                style: TextStyle(color: Colors.grey[600]),
+                textAlign: TextAlign.center,
+              ),
             ),
             const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => provider.loadMeditations(),
-              child: const Text('Try Again'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () => provider.retry(),
+                  child: const Text('Try Again'),
+                ),
+                const SizedBox(width: 16),
+                if (provider.error!.contains('login') ||
+                    provider.error!.contains('Authentication'))
+                  ElevatedButton(
+                    onPressed: () =>
+                        Navigator.pushReplacementNamed(context, '/login'),
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange),
+                    child: const Text('Login'),
+                  ),
+              ],
             ),
           ],
         ),
@@ -203,28 +235,31 @@ class _MeditationLibraryScreenState extends State<MeditationLibraryScreen>
       );
     }
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(16),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.8,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
+    return RefreshIndicator(
+      onRefresh: () => provider.loadMeditations(),
+      child: GridView.builder(
+        padding: const EdgeInsets.all(16),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          childAspectRatio: 0.8,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+        ),
+        itemCount: provider.meditations.length,
+        itemBuilder: (context, index) {
+          final meditation = provider.meditations[index];
+          return MeditationCardEnhanced(
+            meditation: meditation,
+            onTap: () {
+              Navigator.pushNamed(
+                context,
+                '/meditation-detail',
+                arguments: {'meditation': meditation},
+              );
+            },
+          );
+        },
       ),
-      itemCount: provider.meditations.length,
-      itemBuilder: (context, index) {
-        final meditation = provider.meditations[index];
-        return MeditationCardEnhanced(
-          meditation: meditation,
-          onTap: () {
-            Navigator.pushNamed(
-              context,
-              '/meditation-detail',
-              arguments: {'meditation': meditation},
-            );
-          },
-        );
-      },
     );
   }
 }

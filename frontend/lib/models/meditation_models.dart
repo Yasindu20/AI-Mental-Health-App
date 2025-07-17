@@ -1,4 +1,3 @@
-// frontend/lib/models/meditation_models.dart
 class Meditation {
   final int id;
   final String name;
@@ -32,19 +31,24 @@ class Meditation {
 
   factory Meditation.fromJson(Map<String, dynamic> json) {
     return Meditation(
-      id: json['id'],
-      name: json['name'],
-      type: json['type'],
-      level: json['level'],
-      durationMinutes: json['duration_minutes'],
-      description: json['description'],
-      instructions: List<String>.from(json['instructions']),
-      benefits: List<String>.from(json['benefits']),
-      targetStates: List<String>.from(json['target_states']),
+      id: json['id'] ?? 0,
+      name: json['name'] ?? 'Untitled',
+      type: json['type'] ?? 'mindfulness',
+      level: json['level'] ?? 'beginner',
+      durationMinutes: json['duration_minutes'] ?? 10,
+      description: json['description'] ?? '',
+      instructions: json['instructions'] != null
+          ? List<String>.from(json['instructions'])
+          : [],
+      benefits:
+          json['benefits'] != null ? List<String>.from(json['benefits']) : [],
+      targetStates: json['target_states'] != null
+          ? List<String>.from(json['target_states'])
+          : [],
       audioUrl: json['audio_url'],
       videoUrl: json['video_url'],
-      tags: List<String>.from(json['tags']),
-      effectivenessScore: json['effectiveness_score'].toDouble(),
+      tags: json['tags'] != null ? List<String>.from(json['tags']) : [],
+      effectivenessScore: (json['effectiveness_score'] ?? 0.0).toDouble(),
     );
   }
 }
@@ -70,13 +74,15 @@ class MentalStateAnalysis {
 
   factory MentalStateAnalysis.fromJson(Map<String, dynamic> json) {
     return MentalStateAnalysis(
-      primaryConcern: json['primary_concern'],
-      secondaryConcerns: List<String>.from(json['secondary_concerns']),
-      severityScore: json['severity_score'].toDouble(),
-      emotionalTone: json['emotional_tone'],
-      anxietyLevel: json['anxiety_level'].toDouble(),
-      depressionLevel: json['depression_level'].toDouble(),
-      stressLevel: json['stress_level'].toDouble(),
+      primaryConcern: json['primary_concern'] ?? 'general_wellness',
+      secondaryConcerns: json['secondary_concerns'] != null
+          ? List<String>.from(json['secondary_concerns'])
+          : [],
+      severityScore: (json['severity_score'] ?? 0.0).toDouble(),
+      emotionalTone: json['emotional_tone'] ?? 'neutral',
+      anxietyLevel: (json['anxiety_level'] ?? 0.0).toDouble(),
+      depressionLevel: (json['depression_level'] ?? 0.0).toDouble(),
+      stressLevel: (json['stress_level'] ?? 0.0).toDouble(),
     );
   }
 }
@@ -110,18 +116,19 @@ class MeditationRecommendation {
 
   factory MeditationRecommendation.fromJson(Map<String, dynamic> json) {
     return MeditationRecommendation(
-      id: json['id'],
-      meditation: Meditation.fromJson(json['meditation']),
+      id: json['id'] ?? 0,
+      meditation: Meditation.fromJson(json['meditation'] ?? {}),
       analysis: json['mental_state_analysis'] != null
           ? MentalStateAnalysis.fromJson(json['mental_state_analysis'])
           : null,
-      relevanceScore: json['relevance_score'].toDouble(),
-      personalizationScore: json['personalization_score'].toDouble(),
-      recommendedAt: DateTime.parse(json['recommended_at']),
-      reason: json['reason'],
-      viewed: json['viewed'],
-      started: json['started'],
-      completed: json['completed'],
+      relevanceScore: (json['relevance_score'] ?? 0.0).toDouble(),
+      personalizationScore: (json['personalization_score'] ?? 0.0).toDouble(),
+      recommendedAt:
+          DateTime.tryParse(json['recommended_at'] ?? '') ?? DateTime.now(),
+      reason: json['reason'] ?? '',
+      viewed: json['viewed'] ?? false,
+      started: json['started'] ?? false,
+      completed: json['completed'] ?? false,
       userRating: json['user_rating'],
     );
   }
@@ -156,17 +163,17 @@ class MeditationSession {
 
   factory MeditationSession.fromJson(Map<String, dynamic> json) {
     return MeditationSession(
-      id: json['id'],
-      meditation: Meditation.fromJson(json['meditation']),
-      startedAt: DateTime.parse(json['started_at']),
+      id: json['id'] ?? 0,
+      meditation: Meditation.fromJson(json['meditation'] ?? {}),
+      startedAt: DateTime.tryParse(json['started_at'] ?? '') ?? DateTime.now(),
       completedAt: json['completed_at'] != null
-          ? DateTime.parse(json['completed_at'])
+          ? DateTime.tryParse(json['completed_at'])
           : null,
-      durationSeconds: json['duration_seconds'],
-      preMoodScore: json['pre_mood_score'],
+      durationSeconds: json['duration_seconds'] ?? 0,
+      preMoodScore: json['pre_mood_score'] ?? 5,
       postMoodScore: json['post_mood_score'],
       moodImprovement: json['mood_improvement'],
-      completionPercentage: json['completion_percentage'].toDouble(),
+      completionPercentage: (json['completion_percentage'] ?? 0.0).toDouble(),
       helpful: json['helpful'],
       notes: json['notes'] ?? '',
     );
@@ -180,7 +187,7 @@ class UserMeditationStats {
   final String currentLevel;
   final double avgMoodImprovement;
   final Map<String, double> mostEffectiveTypes;
-  final int favoriteTime;
+  final int? favoriteTime;
   final double completionRate;
 
   UserMeditationStats({
@@ -190,24 +197,40 @@ class UserMeditationStats {
     required this.currentLevel,
     required this.avgMoodImprovement,
     required this.mostEffectiveTypes,
-    required this.favoriteTime,
+    this.favoriteTime,
     required this.completionRate,
   });
 
   factory UserMeditationStats.fromJson(Map<String, dynamic> json) {
     return UserMeditationStats(
-      totalSessions: json['total_sessions'],
-      totalMinutes: json['total_minutes'],
-      currentStreak: json['current_streak'],
-      currentLevel: json['current_level'],
-      avgMoodImprovement: json['avg_mood_improvement'].toDouble(),
-      mostEffectiveTypes: Map<String, double>.from(
-        json['most_effective_types'].map(
-          (k, v) => MapEntry(k, v.toDouble()),
-        ),
-      ),
+      totalSessions: json['total_sessions'] ?? 0,
+      totalMinutes: json['total_minutes'] ?? 0,
+      currentStreak: json['current_streak'] ?? 0,
+      currentLevel: json['current_level'] ?? 'beginner',
+      avgMoodImprovement: (json['avg_mood_improvement'] ?? 0.0).toDouble(),
+      mostEffectiveTypes: json['most_effective_types'] != null
+          ? Map<String, double>.from(
+              json['most_effective_types'].map(
+                (k, v) => MapEntry(k, (v ?? 0.0).toDouble()),
+              ),
+            )
+          : {},
       favoriteTime: json['favorite_time'],
-      completionRate: json['completion_rate'].toDouble(),
+      completionRate: (json['completion_rate'] ?? 0.0).toDouble(),
+    );
+  }
+
+  // Factory for creating default stats when user is new
+  factory UserMeditationStats.defaultStats() {
+    return UserMeditationStats(
+      totalSessions: 0,
+      totalMinutes: 0,
+      currentStreak: 0,
+      currentLevel: 'beginner',
+      avgMoodImprovement: 0.0,
+      mostEffectiveTypes: {},
+      favoriteTime: null,
+      completionRate: 0.0,
     );
   }
 }

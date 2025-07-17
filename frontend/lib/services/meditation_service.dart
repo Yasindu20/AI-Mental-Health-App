@@ -1,32 +1,22 @@
-// frontend/lib/services/meditation_service.dart
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import '../models/meditation_models.dart';
 import 'api_service.dart';
 
 class MeditationService {
-  static const String baseUrl = ApiService.baseUrl;
-
-  static Map<String, String> get headers => ApiService.headers;
-
   // Get meditation recommendations
   static Future<List<MeditationRecommendation>> getRecommendations({
     required int conversationId,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/recommendations/generate/'),
-      headers: headers,
-      body: jsonEncode({'conversation_id': conversationId}),
-    );
+    try {
+      final data = await ApiService.post('/recommendations/generate/',
+          body: {'conversation_id': conversationId});
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final recommendations = data['recommendations'] as List;
+      final recommendations = data['recommendations'] as List? ?? [];
       return recommendations
           .map((r) => MeditationRecommendation.fromJson(r))
           .toList();
-    } else {
-      throw Exception('Failed to get recommendations');
+    } catch (e) {
+      print('Error getting recommendations: $e');
+      throw Exception('Failed to get recommendations: $e');
     }
   }
 
@@ -37,24 +27,38 @@ class MeditationService {
     int? maxDuration,
     String? targetState,
   }) async {
-    final queryParams = <String, String>{};
-    if (type != null) queryParams['type'] = type;
-    if (level != null) queryParams['level'] = level;
-    if (maxDuration != null)
-      queryParams['max_duration'] = maxDuration.toString();
-    if (targetState != null) queryParams['target_state'] = targetState;
+    try {
+      String endpoint = '/meditations/';
+      final queryParams = <String, String>{};
 
-    final uri = Uri.parse('$baseUrl/meditations/').replace(
-      queryParameters: queryParams.isNotEmpty ? queryParams : null,
-    );
+      if (type != null && type != 'All')
+        queryParams['type'] = type.toLowerCase();
+      if (level != null && level != 'All')
+        queryParams['level'] = level.toLowerCase();
+      if (maxDuration != null)
+        queryParams['max_duration'] = maxDuration.toString();
+      if (targetState != null) queryParams['target_state'] = targetState;
 
-    final response = await http.get(uri, headers: headers);
+      if (queryParams.isNotEmpty) {
+        final query = queryParams.entries
+            .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+            .join('&');
+        endpoint += '?$query';
+      }
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = jsonDecode(response.body);
-      return data.map((m) => Meditation.fromJson(m)).toList();
-    } else {
-      throw Exception('Failed to load meditations');
+      final data = await ApiService.get(endpoint);
+
+      if (data is List) {
+        return data.map((m) => Meditation.fromJson(m)).toList();
+      } else if (data is Map && data.containsKey('results')) {
+        final results = data['results'] as List? ?? [];
+        return results.map((m) => Meditation.fromJson(m)).toList();
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print('Error browsing meditations: $e');
+      throw Exception('Failed to load meditations: $e');
     }
   }
 
@@ -63,16 +67,12 @@ class MeditationService {
     required int meditationId,
     required int moodScore,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/meditations/$meditationId/start_session/'),
-      headers: headers,
-      body: jsonEncode({'mood_score': moodScore}),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to start session');
+    try {
+      return await ApiService.post('/meditations/$meditationId/start_session/',
+          body: {'mood_score': moodScore});
+    } catch (e) {
+      print('Error starting session: $e');
+      throw Exception('Failed to start session: $e');
     }
   }
 
@@ -84,35 +84,28 @@ class MeditationService {
     bool? helpful,
     String? notes,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/sessions/$sessionId/complete/'),
-      headers: headers,
-      body: jsonEncode({
+    try {
+      return await ApiService.post('/sessions/$sessionId/complete/', body: {
         'mood_score': moodScore,
         'completion_percentage': completionPercentage,
         'helpful': helpful,
         'notes': notes,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      throw Exception('Failed to complete session');
+      });
+    } catch (e) {
+      print('Error completing session: $e');
+      throw Exception('Failed to complete session: $e');
     }
   }
 
   // Get user stats
   static Future<UserMeditationStats> getUserStats() async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/profile/stats/'),
-      headers: headers,
-    );
-
-    if (response.statusCode == 200) {
-      return UserMeditationStats.fromJson(jsonDecode(response.body));
-    } else {
-      throw Exception('Failed to load stats');
+    try {
+      final data = await ApiService.get('/profile/stats/');
+      return UserMeditationStats.fromJson(data);
+    } catch (e) {
+      print('Error getting user stats: $e');
+      // Return default stats instead of throwing an error
+      return UserMeditationStats.defaultStats();
     }
   }
 
@@ -122,21 +115,18 @@ class MeditationService {
     int? preferredDuration,
     String? preferredTimeOfDay,
   }) async {
-    final body = <String, dynamic>{};
-    if (preferredTypes != null) body['preferred_types'] = preferredTypes;
-    if (preferredDuration != null)
-      body['preferred_duration'] = preferredDuration;
-    if (preferredTimeOfDay != null)
-      body['preferred_time_of_day'] = preferredTimeOfDay;
+    try {
+      final body = <String, dynamic>{};
+      if (preferredTypes != null) body['preferred_types'] = preferredTypes;
+      if (preferredDuration != null)
+        body['preferred_duration'] = preferredDuration;
+      if (preferredTimeOfDay != null)
+        body['preferred_time_of_day'] = preferredTimeOfDay;
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/profile/update_preferences/'),
-      headers: headers,
-      body: jsonEncode(body),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to update preferences');
+      await ApiService.post('/profile/update_preferences/', body: body);
+    } catch (e) {
+      print('Error updating preferences: $e');
+      throw Exception('Failed to update preferences: $e');
     }
   }
 
@@ -147,18 +137,16 @@ class MeditationService {
     String? feedback,
     bool? helpful,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/recommendations/$recommendationId/feedback/'),
-      headers: headers,
-      body: jsonEncode({
-        'rating': rating,
-        'feedback': feedback,
-        'helpful': helpful,
-      }),
-    );
-
-    if (response.statusCode != 200) {
-      throw Exception('Failed to submit feedback');
+    try {
+      await ApiService.post('/recommendations/$recommendationId/feedback/',
+          body: {
+            'rating': rating,
+            'feedback': feedback,
+            'helpful': helpful,
+          });
+    } catch (e) {
+      print('Error providing feedback: $e');
+      throw Exception('Failed to submit feedback: $e');
     }
   }
 }

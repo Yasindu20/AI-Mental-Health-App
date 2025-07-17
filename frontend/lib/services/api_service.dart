@@ -5,28 +5,69 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ApiService {
   static const String baseUrl = 'http://localhost:8000/api';
   static String? _token;
+  static bool _isInitialized = false;
 
   static Future<void> init() async {
+    if (_isInitialized) return;
+
     final prefs = await SharedPreferences.getInstance();
     _token = prefs.getString('authToken');
+    _isInitialized = true;
+    print(
+        'ApiService initialized with token: ${_token != null ? 'Present' : 'None'}');
   }
 
   static Future<void> _saveToken(String token) async {
     _token = token;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('authToken', token);
+    print('Token saved: $token');
   }
 
   static Future<void> clearToken() async {
     _token = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove('authToken');
+    print('Token cleared');
   }
 
-  static Map<String, String> get headers => {
-        'Content-Type': 'application/json',
-        if (_token != null) 'Authorization': 'Token $_token',
-      };
+  static bool get hasToken => _token != null && _token!.isNotEmpty;
+
+  static Map<String, String> get headers {
+    final baseHeaders = {'Content-Type': 'application/json'};
+    if (_token != null && _token!.isNotEmpty) {
+      baseHeaders['Authorization'] = 'Token $_token';
+    }
+    return baseHeaders;
+  }
+
+  // Helper method to handle API responses
+  static Future<Map<String, dynamic>> _handleResponse(
+      http.Response response) async {
+    print('API Response: ${response.statusCode} - ${response.body}');
+
+    if (response.statusCode == 401) {
+      await clearToken();
+      throw Exception('Authentication failed. Please login again.');
+    }
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (response.body.isEmpty) {
+        return {};
+      }
+      return jsonDecode(response.body);
+    } else {
+      String errorMessage = 'Request failed';
+      try {
+        final errorData = jsonDecode(response.body);
+        errorMessage =
+            errorData['error'] ?? errorData['detail'] ?? errorMessage;
+      } catch (e) {
+        errorMessage = 'Server error: ${response.statusCode}';
+      }
+      throw Exception(errorMessage);
+    }
+  }
 
   // Register
   static Future<Map<String, dynamic>> register(
@@ -34,6 +75,8 @@ class ApiService {
     String password,
     String email,
   ) async {
+    await init();
+
     final response = await http.post(
       Uri.parse('$baseUrl/register/'),
       headers: {'Content-Type': 'application/json'},
@@ -44,17 +87,11 @@ class ApiService {
       }),
     );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      if (data.containsKey('token')) {
-        await _saveToken(data['token']);
-      }
-      return data;
-    } else {
-      throw Exception(
-        jsonDecode(response.body)['error'] ?? 'Registration failed',
-      );
+    final data = await _handleResponse(response);
+    if (data.containsKey('token')) {
+      await _saveToken(data['token']);
     }
+    return data;
   }
 
   // Login
@@ -62,35 +99,69 @@ class ApiService {
     String username,
     String password,
   ) async {
+    await init();
+
     final response = await http.post(
       Uri.parse('$baseUrl/login/'),
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode({'username': username, 'password': password}),
     );
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      if (data.containsKey('token')) {
-        await _saveToken(data['token']);
-      }
-      return data;
-    } else {
-      throw Exception(jsonDecode(response.body)['error'] ?? 'Login failed');
+    final data = await _handleResponse(response);
+    if (data.containsKey('token')) {
+      await _saveToken(data['token']);
     }
+    return data;
   }
 
   // Logout
   static Future<void> logout() async {
     try {
-      await http.post(
-        Uri.parse('$baseUrl/logout/'),
-        headers: headers,
-      );
+      if (hasToken) {
+        await http.post(
+          Uri.parse('$baseUrl/logout/'),
+          headers: headers,
+        );
+      }
     } catch (e) {
       print('Error during logout: $e');
     } finally {
       await clearToken();
     }
+  }
+
+  // Generic GET request
+  static Future<dynamic> get(String endpoint) async {
+    await init();
+
+    if (!hasToken) {
+      throw Exception('Authentication required. Please login.');
+    }
+
+    final response = await http.get(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: headers,
+    );
+
+    return await _handleResponse(response);
+  }
+
+  // Generic POST request
+  static Future<dynamic> post(String endpoint,
+      {Map<String, dynamic>? body}) async {
+    await init();
+
+    if (!hasToken) {
+      throw Exception('Authentication required. Please login.');
+    }
+
+    final response = await http.post(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: headers,
+      body: body != null ? jsonEncode(body) : null,
+    );
+
+    return await _handleResponse(response);
   }
 
   // Send meditation chat message
@@ -106,31 +177,14 @@ class ApiService {
       requestBody['conversation_id'] = conversationId;
     }
 
-    final response = await http.post(
-      Uri.parse('$baseUrl/meditation/chat/'),
-      headers: headers,
-      body: jsonEncode(requestBody),
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
-      print(
-          'Failed to send message: ${response.statusCode} - ${response.body}');
-      throw Exception('Failed to send message');
-    }
+    return await post('/meditation/chat/', body: requestBody);
   }
 
   // Check Ollama status
   static Future<Map<String, dynamic>> checkOllamaStatus() async {
-    final response = await http.get(
-      Uri.parse('$baseUrl/meditation/status/'),
-      headers: headers,
-    );
-
-    if (response.statusCode == 200) {
-      return jsonDecode(response.body);
-    } else {
+    try {
+      return await get('/meditation/status/');
+    } catch (e) {
       return {
         'connected': false,
         'models': [],
@@ -138,16 +192,5 @@ class ApiService {
         'model_available': false,
       };
     }
-  }
-
-  // Get meditation stats (placeholder for future features)
-  static Future<Map<String, dynamic>> getMeditationStats() async {
-    // For now, return mock data
-    return {
-      'total_sessions': 12,
-      'total_minutes': 156,
-      'current_streak': 5,
-      'favorite_techniques': ['breathing', 'mindfulness'],
-    };
   }
 }
