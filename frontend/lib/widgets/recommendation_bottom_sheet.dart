@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/meditation_recommendation.dart';
+import '../models/meditation_models.dart'
+    hide MeditationRecommendation; // Hide the conflicting class
 import '../screens/meditation_detail_screen.dart';
 import '../services/recommendation_service.dart';
 
@@ -134,20 +136,50 @@ class RecommendationBottomSheet extends StatelessWidget {
     // Close the bottom sheet
     Navigator.pop(context);
 
+    // Create a Meditation object from the recommendation data
+    final meditationObj = Meditation(
+      id: int.tryParse(recommendation.meditation['id']?.toString() ?? '0') ?? 0,
+      name: recommendation.meditation['title'] ?? 'Meditation',
+      type: recommendation.meditation['category'] ?? 'mindfulness',
+      level: recommendation.meditation['difficulty'] ?? 'Beginner',
+      durationMinutes: _parseDuration(recommendation.meditation['duration']),
+      description: recommendation.explanation,
+      instructions: recommendation.meditation['instructions'] != null
+          ? List<String>.from(recommendation.meditation['instructions'])
+          : [
+              'Begin by finding a comfortable position',
+              'Close your eyes and breathe naturally'
+            ],
+      benefits: recommendation.benefits,
+      targetStates: recommendation.meditation['targetStates'] != null
+          ? List<String>.from(recommendation.meditation['targetStates'])
+          : ['relaxation'],
+      audioUrl: recommendation.meditation['audioUrl'],
+      videoUrl: recommendation.meditation['videoUrl'],
+      tags: recommendation.meditation['tags'] != null
+          ? List<String>.from(recommendation.meditation['tags'])
+          : [],
+      effectivenessScore: recommendation.totalScore,
+    );
+
     // Navigate to meditation detail
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => MeditationDetailScreen(
-          title: recommendation.meditation['title'] ?? 'Meditation',
-          description: recommendation.explanation,
-          duration: recommendation.meditation['duration'] ?? '10 min',
-          audioUrl: recommendation.meditation['audioUrl'] ?? '',
-          imageUrl: recommendation.meditation['imageUrl'] ??
-              'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500',
+          meditation: meditationObj,
         ),
       ),
     );
+  }
+
+  int _parseDuration(String? duration) {
+    if (duration == null) return 10;
+
+    // Extract number from strings like "10 min", "15 minutes", etc.
+    final regex = RegExp(r'(\d+)');
+    final match = regex.firstMatch(duration);
+    return int.tryParse(match?.group(1) ?? '10') ?? 10;
   }
 }
 
@@ -213,14 +245,14 @@ class _RecommendationCard extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.star,
                           color: Colors.amber,
                           size: 16,
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '${(recommendation.totalScore * 5).toStringAsFixed(1)}',
+                          (recommendation.totalScore * 5).toStringAsFixed(1),
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 14,

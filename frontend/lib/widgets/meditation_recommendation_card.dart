@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../screens/meditation_detail_screen.dart';
+import 'package:frontend/screens/meditation_detail_screen.dart';
+import '../models/meditation_models.dart';
 
 class MeditationRecommendationCard extends StatelessWidget {
   final Map<String, dynamic> meditation;
@@ -118,9 +119,9 @@ class MeditationRecommendationCard extends StatelessWidget {
                           child: Container(
                             width: 48,
                             height: 48,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(24),
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
                             ),
                             child: const Icon(
                               Icons.play_arrow,
@@ -193,7 +194,7 @@ class MeditationRecommendationCard extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.star,
                           color: Colors.amber,
                           size: 16,
@@ -253,19 +254,51 @@ class MeditationRecommendationCard extends StatelessWidget {
   void _navigateToDetail(BuildContext context) {
     HapticFeedback.lightImpact();
 
+    // Create a Meditation object from the map data
+    final meditationObj = Meditation(
+      id: int.tryParse(meditation['id']?.toString() ?? '0') ?? 0,
+      name: meditation['title'] ?? 'Untitled Meditation',
+      type: meditation['category'] ?? 'mindfulness',
+      level: meditation['difficulty'] ?? 'Beginner',
+      durationMinutes: _parseDuration(meditation['duration']),
+      description:
+          meditation['description'] ?? 'A peaceful meditation session.',
+      instructions: meditation['instructions'] != null
+          ? List<String>.from(meditation['instructions'])
+          : [
+              'Begin by finding a comfortable position',
+              'Close your eyes and breathe naturally'
+            ],
+      benefits: meditation['benefits'] != null
+          ? List<String>.from(meditation['benefits'])
+          : ['Reduces stress', 'Improves focus'],
+      targetStates: meditation['targetStates'] != null
+          ? List<String>.from(meditation['targetStates'])
+          : ['relaxation'],
+      audioUrl: meditation['audioUrl'],
+      videoUrl: meditation['videoUrl'],
+      tags: meditation['tags'] != null
+          ? List<String>.from(meditation['tags'])
+          : [],
+      effectivenessScore: meditation['rating']?.toDouble() ?? 4.5,
+    );
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => MeditationDetailScreen(
-          title: meditation['title'] ?? 'Untitled Meditation',
-          description:
-              meditation['description'] ?? 'A peaceful meditation session.',
-          duration: meditation['duration'] ?? '10 min',
-          audioUrl: meditation['audioUrl'] ?? '',
-          imageUrl: meditation['imageUrl'] ??
-              'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=500',
+          meditation: meditationObj,
         ),
       ),
     );
+  }
+
+  int _parseDuration(String? duration) {
+    if (duration == null) return 10;
+
+    // Extract number from strings like "10 min", "15 minutes", etc.
+    final regex = RegExp(r'(\d+)');
+    final match = regex.firstMatch(duration);
+    return int.tryParse(match?.group(1) ?? '10') ?? 10;
   }
 }
