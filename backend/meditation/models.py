@@ -1,4 +1,3 @@
-# backend/meditation/models.py
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
@@ -17,6 +16,16 @@ class MeditationType(models.TextChoices):
     ZEN = 'zen', 'Zen'
     CHAKRA = 'chakra', 'Chakra'
     SOUND_BATH = 'sound_bath', 'Sound Bath'
+    CONTEMPLATIVE = 'contemplative', 'Contemplative'
+    SELF_COMPASSION = 'self_compassion', 'Self Compassion'
+    FORGIVENESS = 'forgiveness', 'Forgiveness'
+    HEALING = 'healing', 'Healing'
+    SOMATIC = 'somatic', 'Somatic'
+    GAZING = 'gazing', 'Gazing'
+    NATURE = 'nature', 'Nature'
+    CONCENTRATION = 'concentration', 'Concentration'
+    COGNITIVE = 'cognitive', 'Cognitive'
+    COMPASSION = 'compassion', 'Compassion'
 
 class MentalStateCategory(models.TextChoices):
     ANXIETY = 'anxiety', 'Anxiety'
@@ -31,6 +40,83 @@ class MentalStateCategory(models.TextChoices):
     PANIC = 'panic', 'Panic'
     BURNOUT = 'burnout', 'Burnout'
     LONELINESS = 'loneliness', 'Loneliness'
+    ENERGY = 'energy', 'Energy'
+    BALANCE = 'balance', 'Balance'
+    VITALITY = 'vitality', 'Vitality'
+    HEALING = 'healing', 'Healing'
+    EMOTIONS = 'emotions', 'Emotions'
+    INTUITION = 'intuition', 'Intuition'
+    FEMININE = 'feminine', 'Feminine'
+    CYCLES = 'cycles', 'Cycles'
+    WORKPLACE = 'workplace', 'Workplace'
+    TENSION = 'tension', 'Tension'
+    PARENTING = 'parenting', 'Parenting'
+    PATIENCE = 'patience', 'Patience'
+    MINDFULNESS = 'mindfulness', 'Mindfulness'
+    PRESENCE = 'presence', 'Presence'
+    RUSHING = 'rushing', 'Rushing'
+    CREATIVITY = 'creativity', 'Creativity'
+    FREEDOM = 'freedom', 'Freedom'
+    WORRY = 'worry', 'Worry'
+    RUMINATION = 'rumination', 'Rumination'
+    OVERTHINKING = 'overthinking', 'Overthinking'
+    DISCONNECTION = 'disconnection', 'Disconnection'
+    FATIGUE = 'fatigue', 'Fatigue'
+    GROUNDING = 'grounding', 'Grounding'
+    RELATIONSHIPS = 'relationships', 'Relationships'
+    GUILT = 'guilt', 'Guilt'
+    RESENTMENT = 'resentment', 'Resentment'
+    EXPANSION = 'expansion', 'Expansion'
+    CONSCIOUSNESS = 'consciousness', 'Consciousness'
+    SPIRITUAL = 'spiritual', 'Spiritual'
+    APPRECIATION = 'appreciation', 'Appreciation'
+    SEEKING = 'seeking', 'Seeking'
+    RESTLESSNESS = 'restlessness', 'Restlessness'
+    CLARITY = 'clarity', 'Clarity'
+    PEACE = 'peace', 'Peace'
+    WISDOM = 'wisdom', 'Wisdom'
+    LIBERATION = 'liberation', 'Liberation'
+    AWARENESS = 'awareness', 'Awareness'
+    PHOBIAS = 'phobias', 'Phobias'
+    PAIN = 'pain', 'Pain'
+    ADDICTION = 'addiction', 'Addiction'
+    EATING_DISORDERS = 'eating_disorders', 'Eating Disorders'
+    INSTABILITY = 'instability', 'Instability'
+    CHANGE = 'change', 'Change'
+    SERIOUSNESS = 'seriousness', 'Seriousness'
+    JOY = 'joy', 'Joy'
+    SURRENDER = 'surrender', 'Surrender'
+    CONNECTION = 'connection', 'Connection'
+    ACCEPTANCE = 'acceptance', 'Acceptance'
+    SELF_LOVE = 'self_love', 'Self Love'
+    SHAME = 'shame', 'Shame'
+    STUCK = 'stuck', 'Stuck'
+    EMPATHY = 'empathy', 'Empathy'
+    LOSS = 'loss', 'Loss'
+    SADNESS = 'sadness', 'Sadness'
+    PERFORMANCE = 'performance', 'Performance'
+    CONFIDENCE = 'confidence', 'Confidence'
+    ACHIEVEMENT = 'achievement', 'Achievement'
+    PSYCHIC = 'psychic', 'Psychic'
+    CHILDREN = 'children', 'Children'
+    RELAXATION = 'relaxation', 'Relaxation'
+    BEDTIME = 'bedtime', 'Bedtime'
+    SLEEP = 'sleep', 'Sleep'
+    MORNING = 'morning', 'Morning'
+    ROUTINE = 'routine', 'Routine'
+    BUSY = 'busy', 'Busy'
+    HEART_HEALTH = 'heart_health', 'Heart Health'
+    BEREAVEMENT = 'bereavement', 'Bereavement'
+    IMMUNITY = 'immunity', 'Immunity'
+    PTSD = 'ptsd', 'PTSD'
+    PATTERNS = 'patterns', 'Patterns'
+    GENERAL_WELLNESS = 'general_wellness', 'General Wellness'
+    POSITIVITY = 'positivity', 'Positivity'
+    NEGATIVITY = 'negativity', 'Negativity'
+    DIGITAL_WELLNESS = 'digital_wellness', 'Digital Wellness'
+    PHONE_ADDICTION = 'phone_addiction', 'Phone Addiction'
+    VISION = 'vision', 'Vision'
+    PINEAL = 'pineal', 'Pineal'
 
 class Level(models.TextChoices):
     BEGINNER = 'beginner', 'Beginner'
@@ -44,7 +130,7 @@ class Meditation(models.Model):
     level = models.CharField(max_length=20, choices=Level.choices)
     duration_minutes = models.IntegerField()
     description = models.TextField()
-    instructions = models.JSONField()  # Step-by-step instructions
+    instructions = models.JSONField(default=list)  # Step-by-step instructions
     benefits = models.JSONField(default=list)
     target_states = models.JSONField(default=list)  # List of mental states this helps with
     audio_url = models.URLField(blank=True)
@@ -55,12 +141,6 @@ class Meditation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     popularity_score = models.FloatField(default=0.0)
     effectiveness_score = models.FloatField(default=0.0)
-    
-    class Meta:
-        ordering = ['-effectiveness_score', '-popularity_score']
-    
-    def __str__(self):
-        return f"{self.name} ({self.level} - {self.duration_minutes}min)"
     
     # New fields for richer content
     instructor_name = models.CharField(max_length=200, blank=True)
@@ -88,11 +168,18 @@ class Meditation(models.Model):
     # Timestamps
     published_date = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-effectiveness_score', '-popularity_score']
+    
+    def __str__(self):
+        return f"{self.name} ({self.level} - {self.duration_minutes}min)"
 
 class UserMentalStateAnalysis(models.Model):
     """Analysis of user's mental state from conversation"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mental_analyses')
-    conversation = models.ForeignKey('chat.Conversation', on_delete=models.CASCADE)
+    # Use string reference to avoid circular import
+    conversation = models.ForeignKey('chat.Conversation', on_delete=models.CASCADE, null=True, blank=True)
     analyzed_at = models.DateTimeField(auto_now_add=True)
     
     # Mental state scores (0-10)
@@ -124,7 +211,7 @@ class MeditationRecommendation(models.Model):
     """Personalized meditation recommendations"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recommendations')
     meditation = models.ForeignKey(Meditation, on_delete=models.CASCADE)
-    mental_state_analysis = models.ForeignKey(UserMentalStateAnalysis, on_delete=models.CASCADE)
+    mental_state_analysis = models.ForeignKey(UserMentalStateAnalysis, on_delete=models.CASCADE, null=True, blank=True)
     
     relevance_score = models.FloatField()  # How relevant to user's current state
     personalization_score = models.FloatField()  # How well it matches user preferences

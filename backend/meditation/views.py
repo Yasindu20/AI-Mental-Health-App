@@ -1,9 +1,10 @@
-# backend/meditation/views.py
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.db import models  # <-- FIX 1: Imported models
+from django.db import models
+from django.utils import timezone
+from datetime import datetime, timedelta
 from .models import (
     Meditation, MeditationRecommendation, UserMeditationProfile,
     MeditationSession, UserMentalStateAnalysis
@@ -14,9 +15,6 @@ from .serializers import (
 )
 from ai_engine.mental_state_analyzer import MentalStateAnalyzer
 from .recommendation_engine import recommendation_engine
-from ollama_integration.enhanced_llama_service import EnhancedLlamaService
-from django.utils import timezone
-from datetime import datetime, timedelta  # <-- FIX 2: Imported timedelta
 
 class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
     """Browse and search meditations"""
@@ -76,33 +74,8 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
         return Response({
             'session_id': session.id,
             'meditation': MeditationSerializer(meditation).data,
-            'personalized_script': self._get_personalized_script(meditation, request.user)
+            'personalized_script': meditation.script or "Begin by finding a comfortable position..."
         })
-    
-    def _get_personalized_script(self, meditation, user):
-        """Get personalized meditation script"""
-        # Get latest mental state analysis
-        latest_analysis = UserMentalStateAnalysis.objects.filter(
-            user=user
-        ).order_by('-analyzed_at').first()
-        
-        if latest_analysis and meditation.script:
-            # Use Llama to personalize
-            llama = EnhancedLlamaService()
-            return llama.personalize_meditation_script(
-                {
-                    'name': meditation.name,
-                    'type': meditation.type,
-                    'duration_minutes': meditation.duration_minutes
-                },
-                {
-                    'primary_concern': latest_analysis.primary_concern,
-                    'emotional_tone': latest_analysis.emotional_tone,
-                    'severity_score': latest_analysis.severity_score
-                }
-            )
-        
-        return meditation.script
 
 class RecommendationViewSet(viewsets.ModelViewSet):
     """Get personalized meditation recommendations"""
@@ -112,7 +85,7 @@ class RecommendationViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         return MeditationRecommendation.objects.filter(
             user=self.request.user
-        ).select_related('meditation', 'mental_state_analysis')
+        ).select_related('meditation')
     
     @action(detail=False, methods=['post'])
     def generate(self, request):
