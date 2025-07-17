@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
+import '../providers/meditation_provider.dart';
+import '../widgets/stats_card.dart';
+import '../widgets/feature_card.dart';
+import '../widgets/quick_action_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -11,234 +15,154 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Map<String, dynamic> _stats = {
-    'total_sessions': 0,
-    'total_minutes': 0,
-    'current_streak': 0,
-  };
-
   @override
   void initState() {
     super.initState();
-    _loadStats();
-  }
-
-  Future<void> _loadStats() async {
-    // TODO: Load actual stats from API
-    // For now, using placeholder values
-    setState(() {
-      _stats = {
-        'total_sessions': 12,
-        'total_minutes': 156,
-        'current_streak': 5,
-      };
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<MeditationProvider>(context, listen: false).loadStats();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final meditationProvider = Provider.of<MeditationProvider>(context);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       body: SafeArea(
-        child: Center(
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await meditationProvider.loadStats();
+          },
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(20),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Logo/Icon
-                Container(
-                  width: 120,
-                  height: 120,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF6B4EFF).withOpacity(0.3),
-                        blurRadius: 20,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.spa,
-                    size: 60,
-                    color: Colors.white,
-                  ),
-                ),
-
+                // Header
+                _buildHeader(authProvider),
                 const SizedBox(height: 32),
 
-                // Welcome text
-                Text(
-                  'Welcome back, ${authProvider.user?['username'] ?? 'Friend'}',
-                  style: const TextStyle(
-                    fontSize: 28,
+                // Stats Card
+                if (meditationProvider.stats != null)
+                  StatsCard(stats: meditationProvider.stats!),
+                const SizedBox(height: 24),
+
+                // Main Features
+                const Text(
+                  'How can I help you today?',
+                  style: TextStyle(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF2D2D2D),
                   ),
                 ),
+                const SizedBox(height: 16),
 
-                const SizedBox(height: 8),
-
-                Text(
-                  'Your meditation companion is here',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey[600],
-                  ),
-                ),
-
-                const SizedBox(height: 48),
-
-                // Start Chat Button
-                Container(
-                  width: double.infinity,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
-                    ),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF6B4EFF).withOpacity(0.3),
-                        blurRadius: 15,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      // Clear any previous conversation
-                      Provider.of<ChatProvider>(context, listen: false)
-                          .clearConversation();
-                      Navigator.pushNamed(context, '/chat');
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.transparent,
-                      shadowColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                      ),
-                    ),
-                    child: const Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.chat_bubble_outline, size: 24),
-                        SizedBox(width: 12),
-                        Text(
-                          'Start Conversation',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Quick Stats Card
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          _buildStatItem(
-                            icon: Icons.self_improvement,
-                            label: 'Sessions',
-                            value: _stats['total_sessions'].toString(),
-                            color: const Color(0xFF6B4EFF),
-                          ),
-                          _buildStatItem(
-                            icon: Icons.timer,
-                            label: 'Minutes',
-                            value: _stats['total_minutes'].toString(),
-                            color: const Color(0xFF4CAF50),
-                          ),
-                          _buildStatItem(
-                            icon: Icons.calendar_today,
-                            label: 'Streak',
-                            value: _stats['current_streak'].toString(),
-                            color: const Color(0xFFFF9800),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Quick Actions
                 Row(
                   children: [
                     Expanded(
-                      child: _buildQuickAction(
-                        icon: Icons.history,
-                        label: 'History',
+                      child: FeatureCard(
+                        icon: Icons.chat_bubble_outline,
+                        title: 'Talk to AI',
+                        subtitle: 'Share your thoughts',
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
+                        ),
                         onTap: () {
-                          // TODO: Navigate to history
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('History coming soon!'),
-                            ),
-                          );
+                          Provider.of<ChatProvider>(context, listen: false)
+                              .clearConversation();
+                          Navigator.pushNamed(context, '/chat');
                         },
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     Expanded(
-                      child: _buildQuickAction(
-                        icon: Icons.settings,
-                        label: 'Settings',
+                      child: FeatureCard(
+                        icon: Icons.spa,
+                        title: 'Meditations',
+                        subtitle: 'Find your peace',
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF4CAF50), Color(0xFF66BB6A)],
+                        ),
                         onTap: () {
-                          // TODO: Navigate to settings
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Settings coming soon!'),
-                            ),
-                          );
+                          Navigator.pushNamed(context, '/meditation-library');
                         },
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 24),
 
+                // Quick Actions
+                const Text(
+                  'Quick Actions',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF2D2D2D),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                GridView.count(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 12,
+                  crossAxisSpacing: 12,
+                  childAspectRatio: 1.5,
+                  children: [
+                    QuickActionCard(
+                      icon: Icons.psychology,
+                      title: 'Mood Check',
+                      color: Colors.orange,
+                      onTap: () {
+                        _showMoodCheckDialog(context);
+                      },
+                    ),
+                    QuickActionCard(
+                      icon: Icons.history,
+                      title: 'My Progress',
+                      color: Colors.blue,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/profile');
+                      },
+                    ),
+                    QuickActionCard(
+                      icon: Icons.favorite,
+                      title: 'Favorites',
+                      color: Colors.red,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/meditation-library');
+                      },
+                    ),
+                    QuickActionCard(
+                      icon: Icons.settings,
+                      title: 'Settings',
+                      color: Colors.grey,
+                      onTap: () {
+                        Navigator.pushNamed(context, '/settings');
+                      },
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 32),
 
-                // Logout button
-                TextButton.icon(
-                  onPressed: () async {
-                    await authProvider.logout();
-                    if (!context.mounted) return;
-                    Navigator.pushReplacementNamed(context, '/login');
-                  },
-                  icon: const Icon(Icons.logout, color: Colors.grey),
-                  label: const Text(
-                    'Logout',
-                    style: TextStyle(color: Colors.grey),
+                // Logout
+                Center(
+                  child: TextButton.icon(
+                    onPressed: () async {
+                      await authProvider.logout();
+                      if (!context.mounted) return;
+                      Navigator.pushReplacementNamed(context, '/login');
+                    },
+                    icon: const Icon(Icons.logout, color: Colors.grey),
+                    label: const Text(
+                      'Logout',
+                      style: TextStyle(color: Colors.grey),
+                    ),
                   ),
                 ),
               ],
@@ -249,71 +173,134 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatItem({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Column(
+  Widget _buildHeader(AuthProvider authProvider) {
+    return Row(
       children: [
-        Icon(icon, color: color, size: 28),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: color,
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [Color(0xFF6B4EFF), Color(0xFF8B6BFF)],
+            ),
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF6B4EFF).withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 5),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.spa,
+            size: 30,
+            color: Colors.white,
           ),
         ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                _getGreeting(),
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.grey[600],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                authProvider.user?['username'] ?? 'Friend',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D2D2D),
+                ),
+              ),
+            ],
           ),
+        ),
+        IconButton(
+          onPressed: () {
+            Navigator.pushNamed(context, '/profile');
+          },
+          icon: const Icon(Icons.person_outline),
+          iconSize: 28,
         ),
       ],
     );
   }
 
-  Widget _buildQuickAction({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 5),
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
+  void _showMoodCheckDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('How are you feeling?'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Select your current mood:'),
+            const SizedBox(height: 16),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildMoodChip('😊', 'Happy', Colors.green),
+                _buildMoodChip('😰', 'Anxious', Colors.orange),
+                _buildMoodChip('😢', 'Sad', Colors.blue),
+                _buildMoodChip('😴', 'Tired', Colors.purple),
+                _buildMoodChip('😠', 'Angry', Colors.red),
+                _buildMoodChip('😌', 'Calm', Colors.teal),
+              ],
             ),
           ],
         ),
-        child: Column(
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMoodChip(String emoji, String mood, Color color) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content:
+                Text('You\'re feeling $mood. Here are some suggestions...'),
+            backgroundColor: color,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
-              icon,
-              color: const Color(0xFF6B4EFF),
-              size: 24,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey[700],
-              ),
-            ),
+            Text(emoji, style: const TextStyle(fontSize: 20)),
+            const SizedBox(width: 8),
+            Text(mood,
+                style: TextStyle(color: color, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
