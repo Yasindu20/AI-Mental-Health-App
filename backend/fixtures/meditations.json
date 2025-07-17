@@ -1,6 +1,7 @@
 [
   {
     "model": "meditation.meditation",
+    "pk": 1,
     "fields": {
       "name": "Calm Breathing for Anxiety",
       "type": "breathing",
@@ -22,12 +23,31 @@
         "Improves emotional regulation"
       ],
       "target_states": ["anxiety", "panic", "stress"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
       "tags": ["calming", "quick", "evidence-based"],
-      "effectiveness_score": 0.85
+      "prerequisites": [],
+      "popularity_score": 0.85,
+      "effectiveness_score": 0.85,
+      "instructor_name": "",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
+      "subcategory": "",
+      "keywords": ["breathing", "anxiety", "calm"],
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
     "model": "meditation.meditation",
+    "pk": 2,
     "fields": {
       "name": "Loving-Kindness for Depression",
       "type": "loving_kindness",
@@ -50,12 +70,31 @@
         "Boosts mood and positive emotions"
       ],
       "target_states": ["depression", "loneliness", "self_esteem"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
       "tags": ["compassion", "healing", "connection"],
-      "effectiveness_score": 0.82
+      "prerequisites": [],
+      "popularity_score": 0.82,
+      "effectiveness_score": 0.82,
+      "instructor_name": "",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
+      "subcategory": "",
+      "keywords": ["loving-kindness", "depression", "compassion"],
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
     "model": "meditation.meditation",
+    "pk": 3,
     "fields": {
       "name": "Progressive Body Scan for Stress",
       "type": "body_scan",
@@ -79,12 +118,31 @@
         "Promotes better sleep"
       ],
       "target_states": ["stress", "insomnia", "anxiety"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
       "tags": ["relaxation", "tension-release", "grounding"],
-      "effectiveness_score": 0.88
+      "prerequisites": [],
+      "popularity_score": 0.88,
+      "effectiveness_score": 0.88,
+      "instructor_name": "",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
+      "subcategory": "",
+      "keywords": ["body-scan", "stress", "relaxation"],
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
     "model": "meditation.meditation",
+    "pk": 4,
     "fields": {
       "name": "Mindful Movement for Anger",
       "type": "movement",
@@ -108,12 +166,31 @@
         "Increases body awareness"
       ],
       "target_states": ["anger", "frustration", "restlessness"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
       "tags": ["active", "release", "grounding"],
-      "effectiveness_score": 0.79
+      "prerequisites": [],
+      "popularity_score": 0.79,
+      "effectiveness_score": 0.79,
+      "instructor_name": "",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
+      "subcategory": "",
+      "keywords": ["movement", "anger", "release"],
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
     "model": "meditation.meditation",
+    "pk": 5,
     "fields": {
       "name": "Zen Breathing for Focus",
       "type": "zen",
@@ -137,8 +214,26 @@
         "Strengthens mindfulness"
       ],
       "target_states": ["focus", "anxiety", "stress"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
       "tags": ["traditional", "concentration", "clarity"],
-      "effectiveness_score": 0.83
+      "prerequisites": [],
+      "popularity_score": 0.83,
+      "effectiveness_score": 0.83,
+      "instructor_name": "",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
+      "subcategory": "",
+      "keywords": ["zen", "focus", "concentration"],
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -169,12 +264,26 @@
         "Decreases stress hormones"
       ],
       "target_states": ["stress", "insomnia", "anxiety", "pain"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["evening", "lying down", "systematic"],
+      "prerequisites": [],
+      "popularity_score": 0.92,
+      "effectiveness_score": 0.92,
       "instructor_name": "Dr. Sarah Mitchell",
       "instructor_bio": "Clinical psychologist specializing in mindfulness-based stress reduction",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Progressive Relaxation",
       "keywords": ["relaxation", "sleep", "tension relief", "body awareness"],
-      "tags": ["evening", "lying down", "systematic"],
-      "effectiveness_score": 0.92
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -203,11 +312,26 @@
         "Lowers blood pressure"
       ],
       "target_states": ["anxiety", "panic", "insomnia", "stress"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["quick", "anywhere", "evidence-based"],
+      "prerequisites": [],
+      "popularity_score": 0.95,
+      "effectiveness_score": 0.95,
       "instructor_name": "Based on Dr. Andrew Weil",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Pranayama",
       "keywords": ["quick relief", "breathing technique", "anxiety relief"],
-      "tags": ["quick", "anywhere", "evidence-based"],
-      "effectiveness_score": 0.95
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -237,11 +361,26 @@
         "Improves mood and energy"
       ],
       "target_states": ["depression", "anxiety", "restlessness", "focus"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["outdoor", "active", "grounding"],
+      "prerequisites": [],
+      "popularity_score": 0.87,
+      "effectiveness_score": 0.87,
       "instructor_name": "Thich Nhat Hanh tradition",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Active Meditation",
       "keywords": ["walking", "nature", "movement", "outdoor"],
-      "tags": ["outdoor", "active", "grounding"],
-      "effectiveness_score": 0.87
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -271,11 +410,26 @@
         "Helps process difficult experiences"
       ],
       "target_states": ["anger", "grief", "anxiety", "self_esteem"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["therapeutic", "emotional", "self-compassion"],
+      "prerequisites": [],
+      "popularity_score": 0.90,
+      "effectiveness_score": 0.90,
       "instructor_name": "Tara Brach",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Emotional Healing",
       "keywords": ["emotions", "self-compassion", "RAIN", "healing"],
-      "tags": ["therapeutic", "emotional", "self-compassion"],
-      "effectiveness_score": 0.90
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -305,11 +459,26 @@
         "Enhances creativity and intuition"
       ],
       "target_states": ["insomnia", "fatigue", "stress", "trauma"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["restorative", "lying down", "deep healing"],
+      "prerequisites": [],
+      "popularity_score": 0.94,
+      "effectiveness_score": 0.94,
       "instructor_name": "iRest tradition",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Yogic Sleep",
       "keywords": ["deep rest", "yoga nidra", "restoration", "sleep"],
-      "tags": ["restorative", "lying down", "deep healing"],
-      "effectiveness_score": 0.94
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -338,11 +507,26 @@
         "Balances autonomic nervous system"
       ],
       "target_states": ["stress", "focus", "anxiety", "performance"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["quick", "workplace", "performance"],
+      "prerequisites": [],
+      "popularity_score": 0.91,
+      "effectiveness_score": 0.91,
       "instructor_name": "Mark Divine",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Tactical Breathing",
       "keywords": ["focus", "performance", "tactical", "concentration"],
-      "tags": ["quick", "workplace", "performance"],
-      "effectiveness_score": 0.91
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -372,11 +556,26 @@
         "Enhances empathy and compassion"
       ],
       "target_states": ["loneliness", "anger", "depression", "self_esteem"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["heart-opening", "relationships", "traditional"],
+      "prerequisites": [],
+      "popularity_score": 0.89,
+      "effectiveness_score": 0.89,
       "instructor_name": "Sharon Salzberg",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Compassion Practice",
       "keywords": ["love", "kindness", "compassion", "relationships"],
-      "tags": ["heart-opening", "relationships", "traditional"],
-      "effectiveness_score": 0.89
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -407,11 +606,26 @@
         "Helps with weight management"
       ],
       "target_states": ["stress", "anxiety", "eating_disorders", "mindfulness"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["practical", "daily life", "sensory"],
+      "prerequisites": [],
+      "popularity_score": 0.84,
+      "effectiveness_score": 0.84,
       "instructor_name": "Jan Chozen Bays",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Daily Life Practice",
       "keywords": ["eating", "food", "mindful", "awareness"],
-      "tags": ["practical", "daily life", "sensory"],
-      "effectiveness_score": 0.84
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -441,11 +655,26 @@
         "Enhances grounding"
       ],
       "target_states": ["anxiety", "instability", "change", "grounding"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["symbolic", "strengthening", "classic"],
+      "prerequisites": [],
+      "popularity_score": 0.86,
+      "effectiveness_score": 0.86,
       "instructor_name": "Jon Kabat-Zinn",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Visualization",
       "keywords": ["stability", "strength", "grounding", "visualization"],
-      "tags": ["symbolic", "strengthening", "classic"],
-      "effectiveness_score": 0.86
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -475,11 +704,26 @@
         "Heals emotional wounds"
       ],
       "target_states": ["grief", "depression", "empathy", "trauma"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["advanced", "transformative", "Buddhist"],
+      "prerequisites": [],
+      "popularity_score": 0.88,
+      "effectiveness_score": 0.88,
       "instructor_name": "Pema Chödrön",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Tibetan Practice",
       "keywords": ["compassion", "tonglen", "transformation", "healing"],
-      "tags": ["advanced", "transformative", "Buddhist"],
-      "effectiveness_score": 0.88
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -509,11 +753,26 @@
         "Enhances meditation depth"
       ],
       "target_states": ["stress", "anxiety", "energy", "relaxation"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["passive", "healing", "vibrational"],
+      "prerequisites": [],
+      "popularity_score": 0.91,
+      "effectiveness_score": 0.91,
       "instructor_name": "Crystal Bowl Healing",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Sound Healing",
       "keywords": ["sound", "healing", "vibration", "relaxation"],
-      "tags": ["passive", "healing", "vibrational"],
-      "effectiveness_score": 0.91
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -545,11 +804,26 @@
         "Improves overall wellbeing"
       ],
       "target_states": ["energy", "balance", "vitality", "healing"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["energetic", "traditional", "visualization"],
+      "prerequisites": [],
+      "popularity_score": 0.85,
+      "effectiveness_score": 0.85,
       "instructor_name": "Anodea Judith",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Energy Work",
       "keywords": ["chakra", "energy", "balance", "healing"],
-      "tags": ["energetic", "traditional", "visualization"],
-      "effectiveness_score": 0.85
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -579,11 +853,26 @@
         "Develops visualization skills"
       ],
       "target_states": ["focus", "concentration", "clarity", "vision"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["traditional", "concentration", "visual"],
+      "prerequisites": [],
+      "popularity_score": 0.87,
+      "effectiveness_score": 0.87,
       "instructor_name": "Swami Satyananda",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Yogic Concentration",
       "keywords": ["concentration", "focus", "candle", "gazing"],
-      "tags": ["traditional", "concentration", "visual"],
-      "effectiveness_score": 0.87
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -613,11 +902,26 @@
         "Enhances immune function"
       ],
       "target_states": ["fatigue", "pain", "energy", "balance"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["energizing", "gentle movement", "traditional"],
+      "prerequisites": [],
+      "popularity_score": 0.88,
+      "effectiveness_score": 0.88,
       "instructor_name": "Master Li",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Chinese Energy Work",
       "keywords": ["qi gong", "energy", "movement", "chinese"],
-      "tags": ["energizing", "gentle movement", "traditional"],
-      "effectiveness_score": 0.88
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -647,11 +951,26 @@
         "Improves decision-making"
       ],
       "target_states": ["anxiety", "stress", "heart_health", "clarity"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["scientific", "heart-centered", "balanced"],
+      "prerequisites": [],
+      "popularity_score": 0.93,
+      "effectiveness_score": 0.93,
       "instructor_name": "HeartMath Institute",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Scientific Breathing",
       "keywords": ["coherence", "heart", "HRV", "breathing"],
-      "tags": ["scientific", "heart-centered", "balanced"],
-      "effectiveness_score": 0.93
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -681,11 +1000,26 @@
         "Lowers blood pressure"
       ],
       "target_states": ["stress", "depression", "burnout", "disconnection"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["nature", "therapeutic", "Japanese"],
+      "prerequisites": [],
+      "popularity_score": 0.94,
+      "effectiveness_score": 0.94,
       "instructor_name": "Dr. Qing Li",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Nature Therapy",
       "keywords": ["forest", "nature", "shinrin-yoku", "outdoors"],
-      "tags": ["nature", "therapeutic", "Japanese"],
-      "effectiveness_score": 0.94
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -715,11 +1049,26 @@
         "Improves cold tolerance"
       ],
       "target_states": ["fatigue", "depression", "immunity", "energy"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["intense", "energizing", "popular"],
+      "prerequisites": [],
+      "popularity_score": 0.90,
+      "effectiveness_score": 0.90,
       "instructor_name": "Wim Hof",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Power Breathing",
       "keywords": ["wim hof", "energy", "immune", "breathing"],
-      "tags": ["intense", "energizing", "popular"],
-      "effectiveness_score": 0.90
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -749,11 +1098,26 @@
         "Brings deep peace"
       ],
       "target_states": ["seeking", "restlessness", "clarity", "peace"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["traditional", "simple", "profound"],
+      "prerequisites": [],
+      "popularity_score": 0.91,
+      "effectiveness_score": 0.91,
       "instructor_name": "Zen tradition",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Zen Practice",
       "keywords": ["zen", "zazen", "sitting", "presence"],
-      "tags": ["traditional", "simple", "profound"],
-      "effectiveness_score": 0.91
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -784,11 +1148,26 @@
         "Enhances emotional freedom"
       ],
       "target_states": ["trauma", "self_esteem", "healing", "patterns"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["therapeutic", "emotional healing", "transformative"],
+      "prerequisites": [],
+      "popularity_score": 0.89,
+      "effectiveness_score": 0.89,
       "instructor_name": "Thich Nhat Hanh",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Inner Work",
       "keywords": ["inner child", "healing", "trauma", "compassion"],
-      "tags": ["therapeutic", "emotional healing", "transformative"],
-      "effectiveness_score": 0.89
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -819,11 +1198,26 @@
         "Improves focus and memory"
       ],
       "target_states": ["anxiety", "focus", "balance", "clarity"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["traditional", "balancing", "yogic"],
+      "prerequisites": [],
+      "popularity_score": 0.88,
+      "effectiveness_score": 0.88,
       "instructor_name": "Yogic tradition",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Pranayama",
       "keywords": ["alternate nostril", "balance", "pranayama", "clarity"],
-      "tags": ["traditional", "balancing", "yogic"],
-      "effectiveness_score": 0.88
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -853,11 +1247,26 @@
         "Reduces depression"
       ],
       "target_states": ["depression", "negativity", "joy", "positivity"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["uplifting", "daily practice", "scientific"],
+      "prerequisites": [],
+      "popularity_score": 0.92,
+      "effectiveness_score": 0.92,
       "instructor_name": "Dr. Robert Emmons",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Positive Psychology",
       "keywords": ["gratitude", "happiness", "positivity", "joy"],
-      "tags": ["uplifting", "daily practice", "scientific"],
-      "effectiveness_score": 0.92
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -888,11 +1297,26 @@
         "Leads to liberation from suffering"
       ],
       "target_states": ["wisdom", "clarity", "liberation", "awareness"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["advanced", "insight", "Buddhist"],
+      "prerequisites": [],
+      "popularity_score": 0.90,
+      "effectiveness_score": 0.90,
       "instructor_name": "Joseph Goldstein",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Vipassana",
       "keywords": ["mindfulness", "awareness", "wisdom", "insight"],
-      "tags": ["advanced", "insight", "Buddhist"],
-      "effectiveness_score": 0.90
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -921,11 +1345,26 @@
         "Easy to learn and apply"
       ],
       "target_states": ["anxiety", "trauma", "pain", "phobias"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["quick relief", "somatic", "self-help"],
+      "prerequisites": [],
+      "popularity_score": 0.86,
+      "effectiveness_score": 0.86,
       "instructor_name": "Gary Craig",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Energy Psychology",
       "keywords": ["EFT", "tapping", "emotional freedom", "meridians"],
-      "tags": ["quick relief", "somatic", "self-help"],
-      "effectiveness_score": 0.86
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -956,11 +1395,26 @@
         "Connects to Buddhist lineage"
       ],
       "target_states": ["compassion", "peace", "spirituality", "focus"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["traditional", "sacred", "devotional"],
+      "prerequisites": [],
+      "popularity_score": 0.87,
+      "effectiveness_score": 0.87,
       "instructor_name": "Tibetan Buddhist tradition",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Sacred Mantra",
       "keywords": ["mantra", "om mani", "compassion", "buddhist"],
-      "tags": ["traditional", "sacred", "devotional"],
-      "effectiveness_score": 0.87
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -991,11 +1445,26 @@
         "Enhances real-world presence"
       ],
       "target_states": ["anxiety", "addiction", "focus", "presence"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["modern", "practical", "digital wellness"],
+      "prerequisites": [],
+      "popularity_score": 0.85,
+      "effectiveness_score": 0.85,
       "instructor_name": "Digital Wellness Institute",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Modern Life",
       "keywords": ["technology", "digital detox", "phone addiction", "mindfulness"],
-      "tags": ["modern", "practical", "digital wellness"],
-      "effectiveness_score": 0.85
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1026,11 +1495,26 @@
         "Improves sleep quality"
       ],
       "target_states": ["insomnia", "anxiety", "restlessness", "sleep"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["bedtime", "gentle", "storytelling"],
+      "prerequisites": [],
+      "popularity_score": 0.91,
+      "effectiveness_score": 0.91,
       "instructor_name": "Sleep Stories",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Sleep Meditation",
       "keywords": ["sleep", "bedtime", "story", "relaxation"],
-      "tags": ["bedtime", "gentle", "storytelling"],
-      "effectiveness_score": 0.91
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1061,11 +1545,26 @@
         "Improves mood for hours"
       ],
       "target_states": ["depression", "stress", "seriousness", "joy"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["playful", "unique", "group-friendly"],
+      "prerequisites": [],
+      "popularity_score": 0.88,
+      "effectiveness_score": 0.88,
       "instructor_name": "Dr. Madan Kataria",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Laughter Yoga",
       "keywords": ["laughter", "joy", "playfulness", "stress relief"],
-      "tags": ["playful", "unique", "group-friendly"],
-      "effectiveness_score": 0.88
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1095,11 +1594,26 @@
         "Opens to divine love"
       ],
       "target_states": ["spiritual", "peace", "surrender", "connection"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["spiritual", "christian", "contemplative"],
+      "prerequisites": [],
+      "popularity_score": 0.89,
+      "effectiveness_score": 0.89,
       "instructor_name": "Thomas Keating",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Christian Contemplation",
       "keywords": ["christian", "contemplative", "prayer", "sacred"],
-      "tags": ["spiritual", "christian", "contemplative"],
-      "effectiveness_score": 0.89
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1130,11 +1644,26 @@
         "Develops authentic self-love"
       ],
       "target_states": ["self_esteem", "shame", "self_love", "acceptance"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["brave", "transformative", "self-work"],
+      "prerequisites": [],
+      "popularity_score": 0.87,
+      "effectiveness_score": 0.87,
       "instructor_name": "Tara Brach",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Self-Compassion",
       "keywords": ["mirror", "self-love", "compassion", "acceptance"],
-      "tags": ["brave", "transformative", "self-work"],
-      "effectiveness_score": 0.87
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1164,11 +1693,26 @@
         "Enhances creative expression"
       ],
       "target_states": ["stuck", "emotions", "creativity", "freedom"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["expressive", "cathartic", "embodied"],
+      "prerequisites": [],
+      "popularity_score": 0.86,
+      "effectiveness_score": 0.86,
       "instructor_name": "Gabrielle Roth",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Dance Meditation",
       "keywords": ["dance", "movement", "5rhythms", "expression"],
-      "tags": ["expressive", "cathartic", "embodied"],
-      "effectiveness_score": 0.86
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1199,11 +1743,26 @@
         "Increases present-moment awareness"
       ],
       "target_states": ["anxiety", "worry", "rumination", "overthinking"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["practical", "CBT", "anxiety management"],
+      "prerequisites": [],
+      "popularity_score": 0.84,
+      "effectiveness_score": 0.84,
       "instructor_name": "CBT technique",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Cognitive Technique",
       "keywords": ["worry", "anxiety", "CBT", "thoughts"],
-      "tags": ["practical", "CBT", "anxiety management"],
-      "effectiveness_score": 0.84
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1234,11 +1793,26 @@
         "Increases energy"
       ],
       "target_states": ["stress", "disconnection", "fatigue", "grounding"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["natural", "healing", "outdoor"],
+      "prerequisites": [],
+      "popularity_score": 0.88,
+      "effectiveness_score": 0.88,
       "instructor_name": "Earthing Institute",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Nature Connection",
       "keywords": ["earthing", "grounding", "nature", "barefoot"],
-      "tags": ["natural", "healing", "outdoor"],
-      "effectiveness_score": 0.88
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1270,11 +1844,26 @@
         "Promotes inner peace"
       ],
       "target_states": ["anger", "resentment", "guilt", "relationships"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["healing", "forgiveness", "simple"],
+      "prerequisites": [],
+      "popularity_score": 0.90,
+      "effectiveness_score": 0.90,
       "instructor_name": "Dr. Ihaleakala Hew Len",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Hawaiian Healing",
       "keywords": ["forgiveness", "ho'oponopono", "healing", "hawaiian"],
-      "tags": ["healing", "forgiveness", "simple"],
-      "effectiveness_score": 0.90
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1305,11 +1894,26 @@
         "Connects to quantum field"
       ],
       "target_states": ["expansion", "consciousness", "intuition", "spiritual"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["advanced", "consciousness", "esoteric"],
+      "prerequisites": [],
+      "popularity_score": 0.85,
+      "effectiveness_score": 0.85,
       "instructor_name": "Quantum Method",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Consciousness Expansion",
       "keywords": ["quantum", "consciousness", "breathing", "expansion"],
-      "tags": ["advanced", "consciousness", "esoteric"],
-      "effectiveness_score": 0.85
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1340,11 +1944,26 @@
         "Creates meaningful memories"
       ],
       "target_states": ["creativity", "presence", "appreciation", "mindfulness"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["creative", "active", "modern"],
+      "prerequisites": [],
+      "popularity_score": 0.86,
+      "effectiveness_score": 0.86,
       "instructor_name": "Mindful Photography",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Creative Mindfulness",
       "keywords": ["photography", "creative", "walking", "mindfulness"],
-      "tags": ["creative", "active", "modern"],
-      "effectiveness_score": 0.86
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1375,11 +1994,26 @@
         "Promotes natural healing"
       ],
       "target_states": ["trauma", "tension", "PTSD", "anxiety"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["therapeutic", "somatic", "trauma-informed"],
+      "prerequisites": [],
+      "popularity_score": 0.91,
+      "effectiveness_score": 0.91,
       "instructor_name": "Somatic Experiencing",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Trauma Healing",
       "keywords": ["trauma", "somatic", "release", "healing"],
-      "tags": ["therapeutic", "somatic", "trauma-informed"],
-      "effectiveness_score": 0.91
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1411,11 +2045,26 @@
         "Increases vitality"
       ],
       "target_states": ["balance", "energy", "healing", "vitality"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["colorful", "energetic", "visual"],
+      "prerequisites": [],
+      "popularity_score": 0.84,
+      "effectiveness_score": 0.84,
       "instructor_name": "Color Therapy Institute",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Energy Healing",
       "keywords": ["color", "chakra", "breathing", "visualization"],
-      "tags": ["colorful", "energetic", "visual"],
-      "effectiveness_score": 0.84
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1444,11 +2093,26 @@
         "Reduces parental stress"
       ],
       "target_states": ["anger", "frustration", "parenting", "patience"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["quick", "practical", "parents"],
+      "prerequisites": [],
+      "popularity_score": 0.87,
+      "effectiveness_score": 0.87,
       "instructor_name": "Mindful Parenting",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Family Life",
       "keywords": ["parenting", "children", "patience", "family"],
-      "tags": ["quick", "practical", "parents"],
-      "effectiveness_score": 0.87
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1476,11 +2140,26 @@
         "Creates calm rhythm"
       ],
       "target_states": ["rushing", "mindfulness", "presence", "stress"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["micro-practice", "daily life", "simple"],
+      "prerequisites": [],
+      "popularity_score": 0.85,
+      "effectiveness_score": 0.85,
       "instructor_name": "Tara Brach",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Daily Practice",
       "keywords": ["pause", "transition", "daily", "mindfulness"],
-      "tags": ["micro-practice", "daily life", "simple"],
-      "effectiveness_score": 0.85
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1510,11 +2189,26 @@
         "Promotes peaceful sleep"
       ],
       "target_states": ["emotions", "intuition", "feminine", "cycles"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["traditional", "night practice", "celestial"],
+      "prerequisites": [],
+      "popularity_score": 0.83,
+      "effectiveness_score": 0.83,
       "instructor_name": "Ancient Wisdom",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Celestial Practice",
       "keywords": ["moon", "gazing", "feminine", "night"],
-      "tags": ["traditional", "night practice", "celestial"],
-      "effectiveness_score": 0.83
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1545,11 +2239,26 @@
         "Enhances decision-making"
       ],
       "target_states": ["stress", "focus", "workplace", "tension"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["workplace", "discreet", "quick"],
+      "prerequisites": [],
+      "popularity_score": 0.86,
+      "effectiveness_score": 0.86,
       "instructor_name": "Corporate Wellness",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Workplace Wellness",
       "keywords": ["work", "office", "stress", "productivity"],
-      "tags": ["workplace", "discreet", "quick"],
-      "effectiveness_score": 0.86
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1580,11 +2289,26 @@
         "Connects to eternal love"
       ],
       "target_states": ["grief", "loss", "sadness", "healing"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["healing", "gentle", "heart-centered"],
+      "prerequisites": [],
+      "popularity_score": 0.88,
+      "effectiveness_score": 0.88,
       "instructor_name": "Stephen Levine",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Grief Work",
       "keywords": ["grief", "loss", "healing", "bereavement"],
-      "tags": ["healing", "gentle", "heart-centered"],
-      "effectiveness_score": 0.88
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1615,11 +2339,26 @@
         "Reduces performance anxiety"
       ],
       "target_states": ["performance", "confidence", "focus", "achievement"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["athletic", "performance", "visualization"],
+      "prerequisites": [],
+      "popularity_score": 0.92,
+      "effectiveness_score": 0.92,
       "instructor_name": "Sports Psychology Institute",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Performance Enhancement",
       "keywords": ["sports", "performance", "visualization", "athletics"],
-      "tags": ["athletic", "performance", "visualization"],
-      "effectiveness_score": 0.92
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1650,11 +2389,26 @@
         "Connects to higher wisdom"
       ],
       "target_states": ["intuition", "wisdom", "psychic", "spiritual"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["advanced", "mystical", "intuitive"],
+      "prerequisites": [],
+      "popularity_score": 0.86,
+      "effectiveness_score": 0.86,
       "instructor_name": "Mystic traditions",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Psychic Development",
       "keywords": ["third eye", "intuition", "psychic", "pineal"],
-      "tags": ["advanced", "mystical", "intuitive"],
-      "effectiveness_score": 0.86
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1685,11 +2439,26 @@
         "Creates positive sleep associations"
       ],
       "target_states": ["sleep", "children", "relaxation", "bedtime"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["kids", "bedtime", "playful"],
+      "prerequisites": [],
+      "popularity_score": 0.90,
+      "effectiveness_score": 0.90,
       "instructor_name": "Kids Mindfulness",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Children's Meditation",
       "keywords": ["kids", "children", "sleep", "bedtime"],
-      "tags": ["kids", "bedtime", "playful"],
-      "effectiveness_score": 0.90
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   },
   {
@@ -1720,11 +2489,26 @@
         "Enhances sensory awareness"
       ],
       "target_states": ["morning", "mindfulness", "routine", "busy"],
+      "audio_url": "",
+      "video_url": "",
+      "script": "",
+      "tags": ["morning", "practical", "no-extra-time"],
+      "prerequisites": [],
+      "popularity_score": 0.88,
+      "effectiveness_score": 0.88,
       "instructor_name": "Everyday Mindfulness",
+      "instructor_bio": "",
+      "background_music_url": "",
+      "thumbnail_url": "",
+      "source": "original",
       "subcategory": "Daily Rituals",
       "keywords": ["coffee", "morning", "ritual", "practical"],
-      "tags": ["morning", "practical", "no-extra-time"],
-      "effectiveness_score": 0.88
+      "times_played": 0,
+      "average_rating": 0.0,
+      "total_ratings": 0,
+      "created_at": "2024-01-01T00:00:00Z",
+      "published_date": "2024-01-01T00:00:00Z",
+      "last_updated": "2024-01-01T00:00:00Z"
     }
   }
 ]
