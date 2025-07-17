@@ -1,4 +1,3 @@
-# backend/mental_health_api/urls.py
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
@@ -14,6 +13,12 @@ from crisis_detection.views import (
     UserEmergencyContactViewSet, 
     UserCrisisProfileViewSet,
     CrisisDetectionViewSet
+)
+from meditation.views import (
+    MeditationViewSet,
+    RecommendationViewSet,
+    MeditationSessionViewSet,
+    UserMeditationProfileViewSet
 )
 
 # Create a public API info view
@@ -36,6 +41,10 @@ def api_info_view(request):
             'api_root': '/api/',
             'conversations': '/api/conversations/',
             'meditation_chat': '/api/meditation/chat/',
+            'meditations': '/api/meditations/',
+            'recommendations': '/api/recommendations/',
+            'sessions': '/api/sessions/',
+            'profile': '/api/profile/',
             'user_context': '/api/context/',
             'crisis_resources': '/api/crisis-resources/',
             'emergency_contacts': '/api/emergency-contacts/',
@@ -96,6 +105,10 @@ router.register(r'crisis-resources', CrisisResourceViewSet, basename='crisis-res
 router.register(r'emergency-contacts', UserEmergencyContactViewSet, basename='emergency-contact')
 router.register(r'crisis-profile', UserCrisisProfileViewSet, basename='crisis-profile')
 router.register(r'crisis-detections', CrisisDetectionViewSet, basename='crisis-detection')
+router.register(r'meditations', MeditationViewSet, basename='meditation')
+router.register(r'recommendations', RecommendationViewSet, basename='recommendation')
+router.register(r'sessions', MeditationSessionViewSet, basename='session')
+router.register(r'profile', UserMeditationProfileViewSet, basename='profile')
 
 urlpatterns = [
     # Root domain
