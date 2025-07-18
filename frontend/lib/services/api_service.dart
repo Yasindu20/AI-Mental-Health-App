@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:frontend/models/meditation_models.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -191,6 +192,47 @@ class ApiService {
         'current_model': '',
         'model_available': false,
       };
+    }
+  }
+
+  // Get external content meditations
+  static Future<List<Meditation>> getExternalMeditations({
+    String source = 'all',
+    int page = 1,
+  }) async {
+    try {
+      final queryParams = {
+        'source': source,
+        'page': page.toString(),
+      };
+
+      final query = queryParams.entries
+          .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+          .join('&');
+
+      final data = await get('/meditations/external_content/?$query');
+
+      if (data is Map && data.containsKey('results')) {
+        final results = data['results'] as List? ?? [];
+        return results.map((m) => Meditation.fromJson(m)).toList();
+      } else if (data is List) {
+        return data.map((m) => Meditation.fromJson(m)).toList();
+      }
+
+      return [];
+    } catch (e) {
+      print('Error getting external meditations: $e');
+      return [];
+    }
+  }
+
+  // Refresh content (admin only)
+  static Future<Map<String, dynamic>> refreshContent() async {
+    try {
+      return await post('/meditations/refresh_content/');
+    } catch (e) {
+      print('Error refreshing content: $e');
+      throw Exception('Failed to refresh content');
     }
   }
 }

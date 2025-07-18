@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/services/api_service.dart';
 import '../models/meditation_models.dart';
 import '../services/meditation_service.dart';
 
@@ -36,6 +37,21 @@ class MeditationProvider extends ChangeNotifier {
       ];
 
   List<String> get levels => ['All', 'Beginner', 'Intermediate', 'Advanced'];
+
+  List<Meditation> _externalMeditations = [];
+  bool _isLoadingExternal = false;
+  String _selectedSource = 'all';
+
+  List<Meditation> get externalMeditations => _externalMeditations;
+  bool get isLoadingExternal => _isLoadingExternal;
+  String get selectedSource => _selectedSource;
+
+  List<String> get availableSources => [
+        'all',
+        'youtube',
+        'spotify',
+        'huggingface',
+      ];
 
   Future<void> loadMeditations() async {
     if (_isLoading) return; // Prevent multiple simultaneous loads
@@ -149,5 +165,53 @@ class MeditationProvider extends ChangeNotifier {
   Future<void> retry() async {
     clearError();
     await loadMeditations();
+  }
+
+  Future<void> loadExternalMeditations({String source = 'all'}) async {
+    _isLoadingExternal = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      _externalMeditations =
+          await ApiService.getExternalMeditations(source: source);
+      _selectedSource = source;
+      print('Loaded ${_externalMeditations.length} external meditations');
+    } catch (e) {
+      _error = e.toString();
+      print('Error loading external meditations: $e');
+    } finally {
+      _isLoadingExternal = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> refreshContent() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final result = await ApiService.refreshContent();
+      print('Content refresh result: $result');
+
+      // Reload both regular and external meditations
+      await Future.wait([
+        loadMeditations(),
+        loadExternalMeditations(source: _selectedSource),
+      ]);
+    } catch (e) {
+      _error = e.toString();
+      print('Error refreshing content: $e');
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  void setSource(String source) {
+    if (_selectedSource != source) {
+      _selectedSource = source;
+      loadExternalMeditations(source: source);
+    }
   }
 }

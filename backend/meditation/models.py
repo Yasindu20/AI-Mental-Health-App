@@ -147,6 +147,11 @@ class Meditation(models.Model):
     instructor_bio = models.TextField(blank=True)
     background_music_url = models.URLField(blank=True)
     thumbnail_url = models.URLField(blank=True)
+
+    # New fields for external content
+    video_url = models.URLField(blank=True, help_text="YouTube or other video URL")
+    external_audio_url = models.URLField(blank=True, help_text="Spotify or other audio URL")
+    content_source_id = models.CharField(max_length=100, blank=True, help_text="External content ID")
     
     # Content source tracking
     source = models.CharField(max_length=50, choices=[
@@ -168,9 +173,20 @@ class Meditation(models.Model):
     # Timestamps
     published_date = models.DateTimeField(auto_now_add=True)
     last_updated = models.DateTimeField(auto_now=True)
+
+    # Enhanced metadata
+    language = models.CharField(max_length=10, default='en')
+    is_free = models.BooleanField(default=True)
+    requires_subscription = models.BooleanField(default=False)
+    content_warning = models.TextField(blank=True)
     
     class Meta:
         ordering = ['-effectiveness_score', '-popularity_score']
+        indexes = [
+            models.Index(fields=['source', 'type']),
+            models.Index(fields=['level', 'duration_minutes']),
+            models.Index(fields=['effectiveness_score']),
+        ]
     
     def __str__(self):
         return f"{self.name} ({self.level} - {self.duration_minutes}min)"

@@ -15,6 +15,8 @@ from .serializers import (
 )
 from ai_engine.mental_state_analyzer import MentalStateAnalyzer
 from .recommendation_engine import recommendation_engine
+from django.db.models import Q
+from .content_aggregator import ContentAggregator
 
 class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
     """Browse and search meditations"""
@@ -75,6 +77,55 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
             'session_id': session.id,
             'meditation': MeditationSerializer(meditation).data,
             'personalized_script': meditation.script or "Begin by finding a comfortable position..."
+        })
+    
+    @action(detail=False, methods=['get'])
+    def external_content(self, request):
+        """Get meditations from external sources"""
+        source = request.query_params.get('source', 'all')
+        
+        queryset = self.get_queryset()
+        
+        if source != 'all':
+            queryset = queryset.filter(source=source)
+        else:
+            queryset = queryset.filter(source__in=['youtube', 'spotify', 'spotify_podcast', 'huggingface'])
+        
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+    
+    @action(detail=False, methods=['post'])
+    def refresh_content(self, request):
+        """Manually trigger content refresh (admin only)"""
+        if not request.user.is_staff:
+            return Response({'error': 'Permission denied'}, status=403)
+        
+        # This could be a background task in production
+        aggregator = ContentAggregator()
+        
+        # Quick refresh with limited content
+        queries = ['guided meditation', 'mindfulness']
+        youtube_content = aggregator.search_youtube_meditations(queries, max_results_per_query=10)
+        spotify_content = aggregator.search_spotify_meditations(queries, max_results_per_query=10)
+        
+        imported = 0
+        for content_list in [youtube_content, spotify_content]:
+            for meditation_data in content_list:
+                if not Meditation.objects.filter(
+                    name=meditation_data['name'],
+                    source=meditation_data['source']
+                ).exists():
+                    Meditation.objects.create(**meditation_data)
+                    imported += 1
+        
+        return Response({
+            'message': f'Imported {imported} new meditations',
+            'total_meditations': Meditation.objects.count()
         })
 
 class RecommendationViewSet(viewsets.ModelViewSet):
