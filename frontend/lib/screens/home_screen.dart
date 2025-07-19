@@ -8,7 +8,7 @@ import '../widgets/feature_card.dart';
 import '../widgets/quick_action_card.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();

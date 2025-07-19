@@ -10,9 +10,9 @@ class RecommendationBottomSheet extends StatelessWidget {
   final List<MeditationRecommendation> recommendations;
 
   const RecommendationBottomSheet({
-    Key? key,
+    super.key,
     required this.recommendations,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -355,7 +355,7 @@ class _RecommendationCard extends StatelessWidget {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
 
                 const SizedBox(height: 12),

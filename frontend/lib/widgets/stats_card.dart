@@ -4,7 +4,7 @@ import '../models/meditation_models.dart';
 class StatsCard extends StatelessWidget {
   final UserMeditationStats stats;
 
-  const StatsCard({Key? key, required this.stats}) : super(key: key);
+  const StatsCard({super.key, required this.stats});
 
   @override
   Widget build(BuildContext context) {

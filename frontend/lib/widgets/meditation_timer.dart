@@ -8,12 +8,12 @@ class MeditationTimer extends StatefulWidget {
   final VoidCallback? onComplete;
 
   const MeditationTimer({
-    Key? key,
+    super.key,
     required this.duration,
     this.controller,
     this.isPaused = false,
     this.onComplete,
-  }) : super(key: key);
+  });
 
   @override
   State<MeditationTimer> createState() => _MeditationTimerState();

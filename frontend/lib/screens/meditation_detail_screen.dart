@@ -8,9 +8,9 @@ class MeditationDetailScreen extends StatefulWidget {
   final Meditation meditation;
 
   const MeditationDetailScreen({
-    Key? key,
+    super.key,
     required this.meditation,
-  }) : super(key: key);
+  });
 
   @override
   State<MeditationDetailScreen> createState() => _MeditationDetailScreenState();

@@ -6,11 +6,11 @@ class MeditationSuggestionCard extends StatelessWidget {
   final VoidCallback onDismiss;
 
   const MeditationSuggestionCard({
-    Key? key,
+    super.key,
     required this.techniques,
     required this.onAccept,
     required this.onDismiss,
-  }) : super(key: key);
+  });
 
   String _getTechniqueName(String technique) {
     final names = {

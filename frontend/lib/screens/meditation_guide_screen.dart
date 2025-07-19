@@ -9,9 +9,9 @@ class MeditationGuideScreen extends StatefulWidget {
   final Meditation meditation;
 
   const MeditationGuideScreen({
-    Key? key,
+    super.key,
     required this.meditation,
-  }) : super(key: key);
+  });
 
   @override
   State<MeditationGuideScreen> createState() => _MeditationGuideScreenState();
@@ -147,30 +147,28 @@ class _MeditationGuideScreenState extends State<MeditationGuideScreen>
                         'Sit or lie down in a relaxed position',
                         'Turn off notifications',
                         'Allow yourself to be present',
-                      ]
-                          .map((tip) => Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.check_circle,
-                                      color: Colors.green,
-                                      size: 16,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        tip,
-                                        style: TextStyle(
-                                          color: Colors.white.withOpacity(0.9),
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+                      ].map((tip) => Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 16,
                                 ),
-                              ))
-                          .toList(),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    tip,
+                                    style: TextStyle(
+                                      color: Colors.white.withOpacity(0.9),
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )),
                     ],
                   ),
                 ),

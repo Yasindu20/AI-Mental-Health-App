@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/meditation_models.dart';
 
-class MeditationCardEnhanced extends StatelessWidget {
+class ExternalMeditationCard extends StatelessWidget {
   final Meditation meditation;
   final VoidCallback onTap;
 
-  const MeditationCardEnhanced({
+  const ExternalMeditationCard({
     super.key,
     required this.meditation,
     required this.onTap,
@@ -30,14 +30,14 @@ class MeditationCardEnhanced extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header with icon and duration
+            // Header with source indicator
             Container(
               height: 120,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    _getTypeColor(meditation.type),
-                    _getTypeColor(meditation.type).withOpacity(0.8),
+                    _getSourceColor(),
+                    _getSourceColor().withOpacity(0.8),
                   ],
                 ),
                 borderRadius: const BorderRadius.only(
@@ -47,13 +47,40 @@ class MeditationCardEnhanced extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  const Center(
-                    child: Icon(
-                      Icons.spa,
-                      size: 40,
-                      color: Colors.white,
+                  // Source icon
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          _getSourceIcon(),
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            _getSourceLabel(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+
+                  // Duration badge
                   Positioned(
                     top: 8,
                     right: 8,
@@ -76,6 +103,8 @@ class MeditationCardEnhanced extends StatelessWidget {
                       ),
                     ),
                   ),
+
+                  // Level badge
                   Positioned(
                     bottom: 8,
                     left: 8,
@@ -124,7 +153,7 @@ class MeditationCardEnhanced extends StatelessWidget {
                       meditation.type.replaceAll('_', ' ').toUpperCase(),
                       style: TextStyle(
                         fontSize: 12,
-                        color: _getTypeColor(meditation.type),
+                        color: _getSourceColor(),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -149,23 +178,17 @@ class MeditationCardEnhanced extends StatelessWidget {
                             ),
                           ],
                         ),
-                        if (meditation.tags.isNotEmpty)
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.grey.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              meditation.tags.first,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Color(0xFF666666),
-                              ),
-                            ),
+                        if (meditation.videoUrl?.isNotEmpty == true)
+                          const Icon(
+                            Icons.play_circle,
+                            color: Colors.red,
+                            size: 16,
+                          ),
+                        if (meditation.audioUrl?.isNotEmpty == true)
+                          const Icon(
+                            Icons.headphones,
+                            color: Colors.green,
+                            size: 16,
                           ),
                       ],
                     ),
@@ -179,8 +202,10 @@ class MeditationCardEnhanced extends StatelessWidget {
     );
   }
 
-  Color _getTypeColor(String type) {
-    switch (type.toLowerCase()) {
+  Color _getSourceColor() {
+    // Access the source through the meditation object
+    // Since we can't access the source field directly, we'll use type-based colors
+    switch (meditation.type.toLowerCase()) {
       case 'breathing':
         return Colors.blue;
       case 'mindfulness':
@@ -189,12 +214,28 @@ class MeditationCardEnhanced extends StatelessWidget {
         return Colors.purple;
       case 'loving_kindness':
         return Colors.pink;
-      case 'visualization':
-        return Colors.teal;
-      case 'movement':
-        return Colors.orange;
       default:
         return const Color(0xFF6B4EFF);
     }
+  }
+
+  IconData _getSourceIcon() {
+    // Default icons based on content type
+    switch (meditation.type.toLowerCase()) {
+      case 'breathing':
+        return Icons.air;
+      case 'mindfulness':
+        return Icons.psychology;
+      case 'body_scan':
+        return Icons.accessibility_new;
+      case 'loving_kindness':
+        return Icons.favorite;
+      default:
+        return Icons.spa;
+    }
+  }
+
+  String _getSourceLabel() {
+    return meditation.type.replaceAll('_', ' ').toUpperCase();
   }
 }

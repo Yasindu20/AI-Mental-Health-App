@@ -31,12 +31,15 @@ class MeditationService {
       String endpoint = '/meditations/';
       final queryParams = <String, String>{};
 
-      if (type != null && type != 'All')
+      if (type != null && type != 'All') {
         queryParams['type'] = type.toLowerCase();
-      if (level != null && level != 'All')
+      }
+      if (level != null && level != 'All') {
         queryParams['level'] = level.toLowerCase();
-      if (maxDuration != null)
+      }
+      if (maxDuration != null) {
         queryParams['max_duration'] = maxDuration.toString();
+      }
       if (targetState != null) queryParams['target_state'] = targetState;
 
       if (queryParams.isNotEmpty) {
@@ -118,10 +121,12 @@ class MeditationService {
     try {
       final body = <String, dynamic>{};
       if (preferredTypes != null) body['preferred_types'] = preferredTypes;
-      if (preferredDuration != null)
+      if (preferredDuration != null) {
         body['preferred_duration'] = preferredDuration;
-      if (preferredTimeOfDay != null)
+      }
+      if (preferredTimeOfDay != null) {
         body['preferred_time_of_day'] = preferredTimeOfDay;
+      }
 
       await ApiService.post('/profile/update_preferences/', body: body);
     } catch (e) {

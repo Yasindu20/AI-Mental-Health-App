@@ -9,14 +9,14 @@ class StepIndicator extends StatelessWidget {
   final double spacing;
 
   const StepIndicator({
-    Key? key,
+    super.key,
     required this.currentStep,
     required this.totalSteps,
     this.activeColor = const Color(0xFF6B4EFF),
     this.inactiveColor = Colors.grey,
     this.dotSize = 12,
     this.spacing = 8,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -79,13 +79,13 @@ class LinearStepIndicator extends StatelessWidget {
   final double height;
 
   const LinearStepIndicator({
-    Key? key,
+    super.key,
     required this.currentStep,
     required this.totalSteps,
     this.activeColor = const Color(0xFF6B4EFF),
     this.inactiveColor = Colors.grey,
     this.height = 4,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

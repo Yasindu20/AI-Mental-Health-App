@@ -9,12 +9,12 @@ class CrisisAlertDialog extends StatelessWidget {
   final bool immediateRisk;
 
   const CrisisAlertDialog({
-    Key? key,
+    super.key,
     required this.crisisLevel,
     required this.resources,
     this.emergencyContact,
     this.immediateRisk = false,
-  }) : super(key: key);
+  });
 
   Color _getLevelColor() {
     switch (crisisLevel) {

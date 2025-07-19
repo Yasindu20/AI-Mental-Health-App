@@ -8,10 +8,10 @@ class MeditationRecommendationCard extends StatelessWidget {
   final VoidCallback? onFavoriteToggle;
 
   const MeditationRecommendationCard({
-    Key? key,
+    super.key,
     required this.meditation,
     this.onFavoriteToggle,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

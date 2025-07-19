@@ -5,10 +5,10 @@ class InstructionsPreview extends StatelessWidget {
   final VoidCallback onViewAll;
 
   const InstructionsPreview({
-    Key? key,
+    super.key,
     required this.instructions,
     required this.onViewAll,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +58,7 @@ class InstructionsPreview extends StatelessWidget {
                 final index = entry.key;
                 final instruction = entry.value;
                 return _buildInstructionStep(index + 1, instruction);
-              }).toList(),
+              }),
               if (instructions.length > 3)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
