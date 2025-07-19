@@ -8,12 +8,12 @@ class MeditationPlayerScreen extends StatefulWidget {
   final String duration;
 
   const MeditationPlayerScreen({
-    Key? key,
+    super.key,
     required this.title,
     required this.audioUrl,
     required this.imageUrl,
     required this.duration,
-  }) : super(key: key);
+  });
 
   @override
   State<MeditationPlayerScreen> createState() => _MeditationPlayerScreenState();

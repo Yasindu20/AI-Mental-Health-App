@@ -6,7 +6,7 @@ import '../widgets/meditation_card_enhanced.dart';
 import '../widgets/filter_bottom_sheet.dart';
 
 class MeditationLibraryScreen extends StatefulWidget {
-  const MeditationLibraryScreen({Key? key}) : super(key: key);
+  const MeditationLibraryScreen({super.key});
 
   @override
   State<MeditationLibraryScreen> createState() =>

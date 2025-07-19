@@ -6,10 +6,10 @@ class MeditationCardEnhanced extends StatelessWidget {
   final VoidCallback onTap;
 
   const MeditationCardEnhanced({
-    Key? key,
+    super.key,
     required this.meditation,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

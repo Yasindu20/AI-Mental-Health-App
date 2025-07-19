@@ -23,7 +23,7 @@ class Message {
     );
   }
 
-  get message => null;
+  Null get message => null;
 
   Map<String, dynamic> toJson() {
     return {

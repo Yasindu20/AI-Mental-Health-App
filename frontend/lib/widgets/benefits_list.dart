@@ -4,9 +4,9 @@ class BenefitsList extends StatelessWidget {
   final List<String> benefits;
 
   const BenefitsList({
-    Key? key,
+    super.key,
     required this.benefits,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

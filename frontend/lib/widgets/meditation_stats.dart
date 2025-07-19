@@ -5,9 +5,9 @@ class MeditationStats extends StatelessWidget {
   final Meditation meditation;
 
   const MeditationStats({
-    Key? key,
+    super.key,
     required this.meditation,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

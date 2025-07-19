@@ -3,7 +3,7 @@ import '../models/crisis_models.dart';
 import '../services/crisis_service.dart';
 
 class SafetyPlanScreen extends StatefulWidget {
-  const SafetyPlanScreen({Key? key}) : super(key: key);
+  const SafetyPlanScreen({super.key});
 
   @override
   State<SafetyPlanScreen> createState() => _SafetyPlanScreenState();
@@ -201,7 +201,7 @@ class _SafetyPlanScreenState extends State<SafetyPlanScreen> {
               ],
             ),
           );
-        }).toList(),
+        }),
         TextButton.icon(
           onPressed: onAdd,
           icon: const Icon(Icons.add),
@@ -390,7 +390,7 @@ class _SafetyPlanScreenState extends State<SafetyPlanScreen> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                   TextButton.icon(
                     onPressed: () {
                       setState(() {

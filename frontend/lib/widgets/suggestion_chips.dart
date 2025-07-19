@@ -5,10 +5,10 @@ class SuggestionChips extends StatelessWidget {
   final Function(String) onSelected;
 
   const SuggestionChips({
-    Key? key,
+    super.key,
     required this.suggestions,
     required this.onSelected,
-  }) : super(key: key);
+  });
 
   String _getSuggestionText(String suggestion) {
     final suggestionTexts = {

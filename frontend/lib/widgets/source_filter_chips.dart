@@ -6,11 +6,11 @@ class SourceFilterChips extends StatelessWidget {
   final Function(String) onSourceSelected;
 
   const SourceFilterChips({
-    Key? key,
+    super.key,
     required this.sources,
     required this.selectedSource,
     required this.onSourceSelected,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

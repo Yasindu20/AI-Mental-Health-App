@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/meditation_provider.dart';
 
 class FilterBottomSheet extends StatefulWidget {
-  const FilterBottomSheet({Key? key}) : super(key: key);
+  const FilterBottomSheet({super.key});
 
   @override
   State<FilterBottomSheet> createState() => _FilterBottomSheetState();
@@ -12,7 +12,7 @@ class FilterBottomSheet extends StatefulWidget {
 class _FilterBottomSheetState extends State<FilterBottomSheet> {
   String _selectedCategory = 'All';
   String _selectedLevel = 'All';
-  List<String> _selectedDurations = [];
+  final List<String> _selectedDurations = [];
   RangeValues _durationRange = const RangeValues(5, 30);
 
   @override

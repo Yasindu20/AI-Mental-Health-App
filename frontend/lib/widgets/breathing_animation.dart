@@ -6,11 +6,11 @@ class BreathingAnimation extends StatefulWidget {
   final double size;
 
   const BreathingAnimation({
-    Key? key,
+    super.key,
     required this.controller,
     this.color = Colors.blue,
     this.size = 120,
-  }) : super(key: key);
+  });
 
   @override
   State<BreathingAnimation> createState() => _BreathingAnimationState();
