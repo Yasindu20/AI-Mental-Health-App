@@ -1,27 +1,24 @@
-# backend/meditation/serializers.py
 from rest_framework import serializers
 from .models import (
     Meditation, MeditationRecommendation, UserMeditationProfile,
-    MeditationSession, UserMentalStateAnalysis
+    MeditationSession, UserMentalStateAnalysis, ExternalContentUsage
 )
 
 class MeditationSerializer(serializers.ModelSerializer):
+    is_external = serializers.ReadOnlyField()
+    playable_url = serializers.ReadOnlyField()
+    source_display = serializers.CharField(source='get_source_display', read_only=True)
+    type_display = serializers.CharField(source='get_type_display', read_only=True)
+    level_display = serializers.CharField(source='get_level_display', read_only=True)
+    
     class Meta:
         model = Meditation
-        fields = [
-            'id', 'name', 'type', 'level', 'duration_minutes',
-            'description', 'instructions', 'benefits', 'target_states',
-            'audio_url', 'video_url', 'tags', 'effectiveness_score'
-        ]
+        fields = '__all__'
 
 class MentalStateAnalysisSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserMentalStateAnalysis
-        fields = [
-            'id', 'analyzed_at', 'primary_concern', 'secondary_concerns',
-            'severity_score', 'emotional_tone', 'key_themes',
-            'anxiety_level', 'depression_level', 'stress_level'
-        ]
+        fields = '__all__'
 
 class RecommendationSerializer(serializers.ModelSerializer):
     meditation = MeditationSerializer(read_only=True)
@@ -29,12 +26,7 @@ class RecommendationSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MeditationRecommendation
-        fields = [
-            'id', 'meditation', 'mental_state_analysis',
-            'relevance_score', 'personalization_score',
-            'recommended_at', 'reason', 'viewed', 'started',
-            'completed', 'user_rating'
-        ]
+        fields = '__all__'
 
 class MeditationSessionSerializer(serializers.ModelSerializer):
     meditation = MeditationSerializer(read_only=True)
@@ -42,17 +34,17 @@ class MeditationSessionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = MeditationSession
-        fields = [
-            'id', 'meditation', 'started_at', 'completed_at',
-            'duration_seconds', 'pre_mood_score', 'post_mood_score',
-            'mood_improvement', 'completion_percentage', 'helpful', 'notes'
-        ]
+        fields = '__all__'
 
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserMeditationProfile
-        fields = [
-            'preferred_types', 'preferred_duration', 'preferred_time_of_day',
-            'current_level', 'total_sessions', 'total_minutes',
-            'consecutive_days', 'last_session_date'
-        ]
+        fields = '__all__'
+        read_only_fields = ('user', 'total_sessions', 'total_minutes', 'consecutive_days')
+
+class ExternalContentUsageSerializer(serializers.ModelSerializer):
+    meditation = MeditationSerializer(read_only=True)
+    
+    class Meta:
+        model = ExternalContentUsage
+        fields = '__all__'

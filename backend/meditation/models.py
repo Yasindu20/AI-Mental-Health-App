@@ -26,6 +26,8 @@ class MeditationType(models.TextChoices):
     CONCENTRATION = 'concentration', 'Concentration'
     COGNITIVE = 'cognitive', 'Cognitive'
     COMPASSION = 'compassion', 'Compassion'
+    SLEEP = 'sleep', 'Sleep'
+    AMBIENT = 'ambient', 'Ambient'
 
 class MentalStateCategory(models.TextChoices):
     ANXIETY = 'anxiety', 'Anxiety'
@@ -101,7 +103,6 @@ class MentalStateCategory(models.TextChoices):
     CHILDREN = 'children', 'Children'
     RELAXATION = 'relaxation', 'Relaxation'
     BEDTIME = 'bedtime', 'Bedtime'
-    SLEEP = 'sleep', 'Sleep'
     MORNING = 'morning', 'Morning'
     ROUTINE = 'routine', 'Routine'
     BUSY = 'busy', 'Busy'
@@ -123,78 +124,176 @@ class Level(models.TextChoices):
     INTERMEDIATE = 'intermediate', 'Intermediate'
     ADVANCED = 'advanced', 'Advanced'
 
+class ContentSource(models.TextChoices):
+    ORIGINAL = 'original', 'Original Content'
+    YOUTUBE = 'youtube', 'YouTube'
+    SPOTIFY = 'spotify', 'Spotify'
+    SPOTIFY_PODCAST = 'spotify_podcast', 'Spotify Podcast'
+    HUGGINGFACE = 'huggingface', 'Hugging Face'
+    HUGGINGFACE_AI = 'huggingface_ai', 'AI Generated'
+    CURATED = 'curated', 'Curated Content'
+    COMMUNITY = 'community', 'Community Submission'
+
 class Meditation(models.Model):
-    """Comprehensive meditation database"""
-    name = models.CharField(max_length=200)
+    """Unified meditation model supporting both internal and external content"""
+    
+    # Basic Information
+    name = models.CharField(max_length=300)
     type = models.CharField(max_length=30, choices=MeditationType.choices)
     level = models.CharField(max_length=20, choices=Level.choices)
     duration_minutes = models.IntegerField()
     description = models.TextField()
-    instructions = models.JSONField(default=list)  # Step-by-step instructions
-    benefits = models.JSONField(default=list)
-    target_states = models.JSONField(default=list)  # List of mental states this helps with
-    audio_url = models.URLField(blank=True)
-    video_url = models.URLField(blank=True)
-    script = models.TextField(blank=True)  # Full meditation script
-    tags = models.JSONField(default=list)
-    prerequisites = models.JSONField(default=list)  # Required prior meditations
-    created_at = models.DateTimeField(auto_now_add=True)
-    popularity_score = models.FloatField(default=0.0)
-    effectiveness_score = models.FloatField(default=0.0)
     
-    # New fields for richer content
+    # Content Source
+    source = models.CharField(max_length=20, choices=ContentSource.choices, default=ContentSource.ORIGINAL)
+    external_id = models.CharField(max_length=200, blank=True, help_text="External API ID")
+    
+    # Media URLs
+    audio_url = models.URLField(blank=True, help_text="Internal or Spotify audio URL")
+    video_url = models.URLField(blank=True, help_text="Internal or YouTube video URL")
+    spotify_url = models.URLField(blank=True, help_text="Spotify track/playlist URL")
+    thumbnail_url = models.URLField(blank=True)
+    background_music_url = models.URLField(blank=True)
+    
+    # Content
+    script = models.TextField(blank=True, help_text="Full meditation script")
+    instructions = models.JSONField(default=list, help_text="Step-by-step instructions")
+    benefits = models.JSONField(default=list)
+    target_states = models.JSONField(default=list, help_text="Mental states this helps with")
+    tags = models.JSONField(default=list)
+    keywords = models.JSONField(default=list, help_text="For better search")
+    prerequisites = models.JSONField(default=list, help_text="Required prior meditations")
+    
+    # Creator Information
     instructor_name = models.CharField(max_length=200, blank=True)
     instructor_bio = models.TextField(blank=True)
-    background_music_url = models.URLField(blank=True)
-    thumbnail_url = models.URLField(blank=True)
-
-    # New fields for external content
-    video_url = models.URLField(blank=True, help_text="YouTube or other video URL")
-    external_audio_url = models.URLField(blank=True, help_text="Spotify or other audio URL")
-    content_source_id = models.CharField(max_length=100, blank=True, help_text="External content ID")
+    artist_name = models.CharField(max_length=200, blank=True, help_text="For external content")
+    channel_name = models.CharField(max_length=200, blank=True, help_text="YouTube channel")
+    album_name = models.CharField(max_length=200, blank=True, help_text="Spotify album")
     
-    # Content source tracking
-    source = models.CharField(max_length=50, choices=[
-        ('original', 'Original Content'),
-        ('curated', 'Curated Content'),
-        ('community', 'Community Submission'),
-        ('api', 'External API'),
-    ], default='original')
-    
-    # Detailed categorization
-    subcategory = models.CharField(max_length=100, blank=True)
-    keywords = models.JSONField(default=list)  # For better search
-    
-    # Engagement metrics
-    times_played = models.IntegerField(default=0)
+    # Metrics and Engagement
+    popularity_score = models.FloatField(default=0.0)
+    effectiveness_score = models.FloatField(default=0.5)
     average_rating = models.FloatField(default=0.0)
     total_ratings = models.IntegerField(default=0)
+    times_played = models.IntegerField(default=0)
     
-    # Timestamps
-    published_date = models.DateTimeField(auto_now_add=True)
-    last_updated = models.DateTimeField(auto_now=True)
-
-    # Enhanced metadata
+    # External Platform Metrics
+    view_count = models.BigIntegerField(default=0, help_text="YouTube views")
+    like_count = models.BigIntegerField(default=0, help_text="YouTube likes")
+    spotify_popularity = models.IntegerField(default=0, help_text="Spotify popularity score")
+    downloads = models.IntegerField(default=0, help_text="HuggingFace downloads")
+    
+    # Content Properties
+    subcategory = models.CharField(max_length=100, blank=True)
     language = models.CharField(max_length=10, default='en')
     is_free = models.BooleanField(default=True)
     requires_subscription = models.BooleanField(default=False)
     content_warning = models.TextField(blank=True)
     
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    published_date = models.DateTimeField(auto_now_add=True)
+    last_synced = models.DateTimeField(auto_now=True, help_text="Last sync from external API")
+    
     class Meta:
-        ordering = ['-effectiveness_score', '-popularity_score']
+        ordering = ['-effectiveness_score', '-popularity_score', '-created_at']
         indexes = [
             models.Index(fields=['source', 'type']),
             models.Index(fields=['level', 'duration_minutes']),
             models.Index(fields=['effectiveness_score']),
+            models.Index(fields=['external_id']),
+            models.Index(fields=['source', 'external_id']),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['source', 'external_id'],
+                condition=models.Q(external_id__isnull=False),
+                name='unique_external_content'
+            )
         ]
     
     def __str__(self):
-        return f"{self.name} ({self.level} - {self.duration_minutes}min)"
+        return f"{self.name} ({self.get_source_display()} - {self.level} - {self.duration_minutes}min)"
+    
+    @property
+    def is_external(self):
+        """Check if this is external content"""
+        return self.source in [
+            ContentSource.YOUTUBE,
+            ContentSource.SPOTIFY,
+            ContentSource.SPOTIFY_PODCAST,
+            ContentSource.HUGGINGFACE,
+            ContentSource.HUGGINGFACE_AI
+        ]
+    
+    @property
+    def playable_url(self):
+        """Get the primary playable URL"""
+        if self.video_url:
+            return self.video_url
+        elif self.audio_url:
+            return self.audio_url
+        elif self.spotify_url:
+            return self.spotify_url
+        return None
+
+class UserExternalPreferences(models.Model):
+    """User preferences for external content"""
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='external_preferences')
+    
+    # Source preferences
+    preferred_sources = models.JSONField(default=list, blank=True)
+    blocked_sources = models.JSONField(default=list, blank=True)
+    
+    # Content preferences
+    preferred_external_types = models.JSONField(default=list, blank=True)
+    max_external_duration = models.IntegerField(default=30)
+    min_external_duration = models.IntegerField(default=5)
+    
+    # Quality preferences
+    min_effectiveness_score = models.FloatField(default=0.3)
+    prefer_high_quality = models.BooleanField(default=True)
+    
+    # Platform-specific settings
+    youtube_quality_preference = models.CharField(
+        max_length=10, 
+        choices=[('high', 'High'), ('medium', 'Medium'), ('any', 'Any')],
+        default='high'
+    )
+    spotify_preview_only = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"External preferences for {self.user.username}"
+
+class ExternalContentUsage(models.Model):
+    """Track usage of external content"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    meditation = models.ForeignKey(Meditation, on_delete=models.CASCADE)
+    
+    # Usage tracking
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.IntegerField(default=0)
+    completion_percentage = models.FloatField(default=0.0)
+    
+    # Feedback
+    rating = models.IntegerField(null=True, blank=True)  # 1-5 stars
+    helpful = models.BooleanField(null=True, blank=True)
+    
+    class Meta:
+        ordering = ['-started_at']
+        
+    def __str__(self):
+        return f"{self.user.username} - {self.meditation.name}"
 
 class UserMentalStateAnalysis(models.Model):
     """Analysis of user's mental state from conversation"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='mental_analyses')
-    # Use string reference to avoid circular import
     conversation = models.ForeignKey('chat.Conversation', on_delete=models.CASCADE, null=True, blank=True)
     analyzed_at = models.DateTimeField(auto_now_add=True)
     
@@ -262,11 +361,14 @@ class UserMeditationProfile(models.Model):
     
     # Achievements
     completed_meditations = models.ManyToManyField(Meditation, through='MeditationSession')
-    favorite_meditations = models.ManyToManyField(Meditation, related_name='favorited_by')
+    favorite_meditations = models.ManyToManyField(Meditation, related_name='favorited_by', blank=True)
     
     # Effectiveness tracking
     avg_mood_improvement = models.FloatField(default=0)
     most_effective_types = models.JSONField(default=dict)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     
     def update_level(self):
         """Auto-update user level based on progress"""
@@ -305,3 +407,43 @@ class MeditationSession(models.Model):
         if self.post_mood_score and self.pre_mood_score:
             return self.post_mood_score - self.pre_mood_score
         return 0
+
+# Content Sync Models for External APIs
+class ContentSyncJob(models.Model):
+    """Track content synchronization jobs"""
+    JOB_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('running', 'Running'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+    
+    source = models.CharField(max_length=20, choices=ContentSource.choices)
+    status = models.CharField(max_length=20, choices=JOB_STATUS_CHOICES, default='pending')
+    started_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    total_items = models.IntegerField(default=0)
+    processed_items = models.IntegerField(default=0)
+    new_items = models.IntegerField(default=0)
+    updated_items = models.IntegerField(default=0)
+    error_message = models.TextField(blank=True)
+    
+    class Meta:
+        ordering = ['-started_at']
+
+class ExternalAPIQuota(models.Model):
+    """Track API quota usage"""
+    source = models.CharField(max_length=20, choices=ContentSource.choices, unique=True)
+    daily_requests = models.IntegerField(default=0)
+    monthly_requests = models.IntegerField(default=0)
+    daily_limit = models.IntegerField()
+    monthly_limit = models.IntegerField()
+    last_reset_date = models.DateField(auto_now_add=True)
+    
+    @property
+    def daily_remaining(self):
+        return max(0, self.daily_limit - self.daily_requests)
+    
+    @property
+    def monthly_remaining(self):
+        return max(0, self.monthly_limit - self.monthly_requests)
