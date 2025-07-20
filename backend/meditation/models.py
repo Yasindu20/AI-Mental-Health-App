@@ -144,9 +144,9 @@ class Meditation(models.Model):
     duration_minutes = models.IntegerField()
     description = models.TextField()
     
-    # Content Source
+    # Content Source - UPDATED: Allow NULL for external_id
     source = models.CharField(max_length=20, choices=ContentSource.choices, default=ContentSource.ORIGINAL)
-    external_id = models.CharField(max_length=200, blank=True, help_text="External API ID")
+    external_id = models.CharField(max_length=200, blank=True, null=True, help_text="External API ID")
     
     # Media URLs
     audio_url = models.URLField(blank=True, help_text="Internal or Spotify audio URL")
