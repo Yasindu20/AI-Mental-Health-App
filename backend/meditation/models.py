@@ -144,7 +144,7 @@ class Meditation(models.Model):
     duration_minutes = models.IntegerField()
     description = models.TextField()
     
-    # Content Source - UPDATED: Allow NULL for external_id
+    # Content Source
     source = models.CharField(max_length=20, choices=ContentSource.choices, default=ContentSource.ORIGINAL)
     external_id = models.CharField(max_length=200, blank=True, null=True, help_text="External API ID")
     
@@ -209,7 +209,7 @@ class Meditation(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['source', 'external_id'],
-                condition=models.Q(external_id__isnull=False),
+                condition=models.Q(external_id__isnull=False) & ~models.Q(external_id=''),
                 name='unique_external_content'
             )
         ]
@@ -238,6 +238,13 @@ class Meditation(models.Model):
         elif self.spotify_url:
             return self.spotify_url
         return None
+
+    def save(self, *args, **kwargs):
+        """Override save to handle external_id properly"""
+        # Convert empty string to None for external_id
+        if self.external_id == '':
+            self.external_id = None
+        super().save(*args, **kwargs)
 
 class UserExternalPreferences(models.Model):
     """User preferences for external content"""
