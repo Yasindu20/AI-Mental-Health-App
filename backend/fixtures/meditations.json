@@ -42,7 +42,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -89,7 +103,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -137,7 +165,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -185,7 +227,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -233,7 +289,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -283,7 +353,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -331,7 +415,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -380,7 +478,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -429,7 +541,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -478,7 +604,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -526,7 +666,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -575,7 +729,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -625,7 +793,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -674,7 +856,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -723,7 +919,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -772,7 +982,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -823,7 +1047,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -872,7 +1110,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -921,7 +1173,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -970,7 +1236,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1019,7 +1299,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1068,7 +1362,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1117,7 +1425,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1167,7 +1489,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1217,7 +1553,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1266,7 +1616,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1316,7 +1680,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1364,7 +1742,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1414,7 +1806,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1464,7 +1870,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1514,7 +1934,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1564,7 +1998,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1613,7 +2061,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1663,7 +2125,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1712,7 +2188,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1762,7 +2252,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1812,7 +2316,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1863,7 +2381,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1913,7 +2445,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1963,7 +2509,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -1993,7 +2553,7 @@
         "Increases body awareness",
         "Promotes natural healing"
       ],
-      "target_states": ["trauma", "tension", "PTSD", "anxiety"],
+      "target_states": ["trauma", "tension", "ptsd", "anxiety"],
       "audio_url": "",
       "video_url": "",
       "script": "",
@@ -2013,7 +2573,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -2064,7 +2638,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -2112,7 +2700,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -2159,7 +2761,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -2208,7 +2824,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -2258,7 +2888,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -2308,7 +2952,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -2358,7 +3016,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -2408,7 +3080,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -2458,7 +3144,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   },
   {
@@ -2508,7 +3208,21 @@
       "total_ratings": 0,
       "created_at": "2024-01-01T00:00:00Z",
       "published_date": "2024-01-01T00:00:00Z",
-      "last_updated": "2024-01-01T00:00:00Z"
+      "updated_at": "2024-01-01T00:00:00Z",
+      "external_id": null,
+      "album_name": "",
+      "artist_name": "",
+      "channel_name": "",
+      "downloads": 0,
+      "last_synced": "2024-01-01T00:00:00Z",
+      "like_count": 0,
+      "spotify_popularity": 0,
+      "spotify_url": "",
+      "view_count": 0,
+      "language": "en",
+      "is_free": true,
+      "requires_subscription": false,
+      "content_warning": ""
     }
   }
 ]
