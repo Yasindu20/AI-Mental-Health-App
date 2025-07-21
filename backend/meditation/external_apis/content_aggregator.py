@@ -1,33 +1,75 @@
-# backend/external_apis/content_aggregator.py
+# backend/meditation/external_apis/content_aggregator.py
 from typing import List, Dict, Optional
 from django.core.cache import cache
-from .youtube_service import youtube_service
-from .spotify_service import spotify_service
-from .huggingface_service import huggingface_service
+from django.conf import settings
 import logging
 import asyncio
 import concurrent.futures
+
+# Import services with error handling
+try:
+    from .youtube_service import youtube_service
+    YOUTUBE_AVAILABLE = True
+except ImportError as e:
+    YOUTUBE_AVAILABLE = False
+    youtube_service = None
+    print(f"YouTube service not available: {e}")
+
+try:
+    from .spotify_service import spotify_service
+    SPOTIFY_AVAILABLE = True
+except ImportError as e:
+    SPOTIFY_AVAILABLE = False
+    spotify_service = None
+    print(f"Spotify service not available: {e}")
+
+try:
+    from .huggingface_service import huggingface_service
+    HUGGINGFACE_AVAILABLE = True
+except ImportError as e:
+    HUGGINGFACE_AVAILABLE = False
+    huggingface_service = None
+    print(f"HuggingFace service not available: {e}")
 
 logger = logging.getLogger(__name__)
 
 class ContentAggregator:
     def __init__(self):
-        self.services = {
-            'youtube': youtube_service,
-            'spotify': spotify_service,
-            'huggingface': huggingface_service
-        }
+        self.services = {}
+        
+        # Only add available services
+        if YOUTUBE_AVAILABLE and youtube_service:
+            self.services['youtube'] = youtube_service
+            logger.info("YouTube service registered")
+        
+        if SPOTIFY_AVAILABLE and spotify_service:
+            self.services['spotify'] = spotify_service
+            logger.info("Spotify service registered")
+            
+        if HUGGINGFACE_AVAILABLE and huggingface_service:
+            self.services['huggingface'] = huggingface_service
+            logger.info("HuggingFace service registered")
+            
+        logger.info(f"ContentAggregator initialized with {len(self.services)} services: {list(self.services.keys())}")
     
     def get_all_external_content(self, sources: List[str] = None, 
                                max_per_source: int = 50) -> List[Dict]:
         """Aggregate content from all external sources"""
         if sources is None:
-            sources = ['youtube', 'spotify', 'huggingface']
+            sources = list(self.services.keys())
+            
+        # Filter to only available sources
+        sources = [s for s in sources if s in self.services]
+        
+        if not sources:
+            logger.warning("No valid sources available")
+            return []
             
         cache_key = f'aggregated_content_{"+".join(sources)}_{max_per_source}'
         cached_result = cache.get(cache_key)
         
         if cached_result:
+            logger.info(f"Returning cached content for sources: {sources}")
             return cached_result
             
         all_content = []
@@ -46,8 +88,11 @@ class ContentAggregator:
                 source = futures[future]
                 try:
                     content = future.result(timeout=30)  # 30 second timeout
-                    all_content.extend(content)
-                    logger.info(f'Retrieved {len(content)} items from {source}')
+                    if content:
+                        all_content.extend(content)
+                        logger.info(f'Retrieved {len(content)} items from {source}')
+                    else:
+                        logger.warning(f'No content retrieved from {source}')
                 except Exception as e:
                     logger.error(f'Error getting content from {source}: {str(e)}')
         
@@ -57,24 +102,32 @@ class ContentAggregator:
         # Cache for 2 hours
         cache.set(cache_key, all_content, 7200)
         
+        logger.info(f"Total content aggregated: {len(all_content)} items")
         return all_content
     
     def _get_content_from_source(self, source: str, max_results: int) -> List[Dict]:
         """Get content from a specific source"""
         service = self.services.get(source)
         if not service:
+            logger.warning(f"Service not available for source: {source}")
             return []
             
         try:
             if source == 'youtube':
-                return service.search_meditations(max_results=max_results)
+                content = service.search_meditations(max_results=max_results)
             elif source == 'spotify':
-                return service.search_meditation_playlists(max_results=max_results)
+                content = service.search_meditation_playlists(max_results=max_results)
             elif source == 'huggingface':
-                return service.search_meditation_datasets(max_results=max_results)
+                content = service.search_meditation_datasets(max_results=max_results)
+            else:
+                logger.warning(f"Unknown source type: {source}")
+                return []
+                
+            logger.info(f"Retrieved {len(content)} items from {source}")
+            return content
                 
         except Exception as e:
-            logger.error(f'Error in {source} service: {str(e)}')
+            logger.error(f'Error in {source} service: {str(e)}', exc_info=True)
             
         return []
     
@@ -126,7 +179,7 @@ class ContentAggregator:
                 else:
                     score += 1
                     
-        return min(1.0, score / len(query_words))
+        return min(1.0, score / len(query_words)) if query_words else 0
     
     def get_personalized_recommendations(self, user_preferences: Dict,
                                        max_results: int = 10) -> List[Dict]:

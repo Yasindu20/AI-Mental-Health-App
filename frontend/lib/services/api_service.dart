@@ -204,6 +204,7 @@ class ApiService {
       final queryParams = {
         'source': source,
         'page': page.toString(),
+        'per_page': '20', // Add explicit per_page
       };
 
       final query = queryParams.entries

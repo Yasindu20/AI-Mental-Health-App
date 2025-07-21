@@ -1,21 +1,33 @@
-# backend/external_apis/spotify_service.py
+# backend/meditation/external_apis/spotify_service.py
 import os
 import base64
 import requests
 from typing import List, Dict, Optional
 from django.core.cache import cache
+from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
 
 class SpotifyService:
     def __init__(self):
-        self.client_id = os.getenv('SPOTIFY_CLIENT_ID')
-        self.client_secret = os.getenv('SPOTIFY_CLIENT_SECRET')
+        # Try to get credentials from settings first, then environment
+        config = getattr(settings, 'EXTERNAL_API_CONFIG', {})
+        self.client_id = config.get('SPOTIFY_CLIENT_ID') or os.getenv('SPOTIFY_CLIENT_ID')
+        self.client_secret = config.get('SPOTIFY_CLIENT_SECRET') or os.getenv('SPOTIFY_CLIENT_SECRET')
         self.access_token = None
         
+        if self.client_id and self.client_secret:
+            logger.info("Spotify credentials found and service initialized")
+        else:
+            logger.warning("Spotify credentials not found")
+    
     def _get_access_token(self) -> str:
         """Get Spotify access token"""
+        if not self.client_id or not self.client_secret:
+            logger.error("Spotify credentials not configured")
+            return ''
+            
         cache_key = 'spotify_access_token'
         token = cache.get(cache_key)
         
@@ -38,7 +50,8 @@ class SpotifyService:
             response = requests.post(
                 'https://accounts.spotify.com/api/token',
                 headers=headers,
-                data=data
+                data=data,
+                timeout=10
             )
             response.raise_for_status()
             
@@ -49,6 +62,7 @@ class SpotifyService:
             # Cache token for slightly less than expiry time
             cache.set(cache_key, access_token, expires_in - 60)
             
+            logger.info("Spotify access token obtained successfully")
             return access_token
             
         except Exception as e:
@@ -61,10 +75,12 @@ class SpotifyService:
         cached_result = cache.get(cache_key)
         
         if cached_result:
+            logger.info("Returning cached Spotify results")
             return cached_result
             
         access_token = self._get_access_token()
         if not access_token:
+            logger.error("Cannot get Spotify access token")
             return []
             
         search_queries = [
@@ -85,6 +101,7 @@ class SpotifyService:
                 tracks = self._search_tracks(access_token, query, 
                                            limit=max_results // len(search_queries))
                 all_tracks.extend(tracks)
+                logger.info(f"Found {len(tracks)} tracks for query: {query}")
                 
             except Exception as e:
                 logger.error(f'Error searching Spotify for {query}: {str(e)}')
@@ -97,6 +114,7 @@ class SpotifyService:
         # Cache for 4 hours
         cache.set(cache_key, unique_tracks, 14400)
         
+        logger.info(f"Returning {len(unique_tracks)} unique Spotify tracks")
         return unique_tracks[:max_results]
     
     def _search_tracks(self, access_token: str, query: str, limit: int = 10) -> List[Dict]:
@@ -113,7 +131,8 @@ class SpotifyService:
         response = requests.get(
             'https://api.spotify.com/v1/search',
             headers=headers,
-            params=params
+            params=params,
+            timeout=10
         )
         response.raise_for_status()
         
