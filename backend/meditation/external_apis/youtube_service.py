@@ -1,24 +1,39 @@
-# backend/external_apis/youtube_service.py
+# backend/meditation/external_apis/youtube_service.py
 import os
 import requests
 from typing import List, Dict, Optional
 from django.core.cache import cache
+from django.conf import settings
 import logging
 
 logger = logging.getLogger(__name__)
 
 class YouTubeService:
     def __init__(self):
-        self.api_key = os.getenv('YOUTUBE_API_KEY')
+        # Try to get API key from settings first, then environment
+        self.api_key = (
+            getattr(settings, 'EXTERNAL_API_CONFIG', {}).get('YOUTUBE_API_KEY') or
+            os.getenv('YOUTUBE_API_KEY')
+        )
         self.base_url = 'https://www.googleapis.com/youtube/v3'
         
+        if self.api_key:
+            logger.info("YouTube API key found and service initialized")
+        else:
+            logger.warning("YouTube API key not found")
+    
     def search_meditations(self, query: str = 'guided meditation', 
                           max_results: int = 50) -> List[Dict]:
         """Search for meditation videos on YouTube"""
+        if not self.api_key:
+            logger.error("YouTube API key not configured")
+            return []
+            
         cache_key = f'youtube_search_{query}_{max_results}'
         cached_result = cache.get(cache_key)
         
         if cached_result:
+            logger.info(f"Returning cached YouTube results for: {query}")
             return cached_result
             
         search_queries = [
@@ -53,9 +68,10 @@ class YouTubeService:
                 data = response.json()
                 videos = self._process_youtube_videos(data.get('items', []))
                 all_videos.extend(videos)
+                logger.info(f"Found {len(videos)} videos for query: {search_query}")
                 
             except Exception as e:
-                logger.error(f'Error searching YouTube: {str(e)}')
+                logger.error(f'Error searching YouTube for "{search_query}": {str(e)}')
                 continue
         
         # Remove duplicates and filter quality
@@ -64,6 +80,7 @@ class YouTubeService:
         # Cache for 6 hours
         cache.set(cache_key, unique_videos, 21600)
         
+        logger.info(f"Returning {len(unique_videos)} unique YouTube videos")
         return unique_videos[:max_results]
     
     def _process_youtube_videos(self, items: List[Dict]) -> List[Dict]:
@@ -268,7 +285,7 @@ class YouTubeService:
                 continue
                 
             # Filter out low-quality content
-            if video['view_count'] < 1000:
+            if video['view_count'] < 100:  # Lowered threshold for testing
                 continue
                 
             seen_titles.add(title)

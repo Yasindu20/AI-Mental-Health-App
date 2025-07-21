@@ -1,5 +1,9 @@
 import os
 from pathlib import Path
+from dotenv import load_dotenv  # Add this import
+
+# Load environment variables from .env file
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -195,6 +199,11 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+        'meditation': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
     },
 }
 
@@ -218,3 +227,11 @@ CACHES = {
 SESSION_ENGINE = 'django.contrib.sessions.backends.db'
 SESSION_COOKIE_AGE = 86400  # 24 hours
 SESSION_SAVE_EVERY_REQUEST = True
+
+# External API Configuration
+EXTERNAL_API_CONFIG = {
+    'YOUTUBE_API_KEY': os.getenv('YOUTUBE_API_KEY'),
+    'SPOTIFY_CLIENT_ID': os.getenv('SPOTIFY_CLIENT_ID'),
+    'SPOTIFY_CLIENT_SECRET': os.getenv('SPOTIFY_CLIENT_SECRET'),
+    'HUGGINGFACE_TOKEN': os.getenv('HUGGINGFACE_TOKEN'),
+}

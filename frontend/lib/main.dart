@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../screens/external_content_screen.dart';
 import 'package:provider/provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/chat_provider.dart';
@@ -64,6 +65,7 @@ class MyApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/chat': (context) => const ChatScreen(),
         '/meditation-library': (context) => const MeditationLibraryScreen(),
+        '/external-content': (context) => const ExternalContentScreen(),
         '/profile': (context) => const ProfileScreen(),
         '/settings': (context) => const SettingsScreen(),
       },

@@ -18,16 +18,18 @@ from .serializers import (
     MeditationSessionSerializer, UserProfileSerializer
 )
 
-# Import external content services
+# Import external content services - FIXED IMPORTS
 try:
-    from external_apis.content_aggregator import content_aggregator
-    from external_apis.youtube_service import youtube_service
-    from external_apis.spotify_service import spotify_service
-    from external_apis.huggingface_service import huggingface_service
+    from .external_apis.content_aggregator import content_aggregator
+    from .external_apis.youtube_service import youtube_service
+    from .external_apis.spotify_service import spotify_service
+    from .external_apis.huggingface_service import huggingface_service
     EXTERNAL_APIS_AVAILABLE = True
-except ImportError:
+    print("External APIs loaded successfully")
+except ImportError as e:
     EXTERNAL_APIS_AVAILABLE = False
     content_aggregator = None
+    print(f"External APIs not available: {e}")
 
 # Import AI services
 try:
@@ -141,12 +143,16 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
     
     @action(detail=False, methods=['get'])
     def external_content(self, request):
-        """Get external meditation content with advanced filtering"""
+        """Get external meditation content with advanced filtering - FIXED METHOD"""
+        logger.info(f"External APIs available: {EXTERNAL_APIS_AVAILABLE}")
+        
         if not EXTERNAL_APIS_AVAILABLE:
+            logger.error("External APIs not configured")
             return Response({
                 'error': 'External APIs not configured',
                 'results': [],
-                'count': 0
+                'count': 0,
+                'debug_info': 'Check if external API services are properly imported and configured'
             })
         
         try:
@@ -155,6 +161,8 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
             search_query = request.query_params.get('search', '')
             page = int(request.query_params.get('page', 1))
             per_page = min(int(request.query_params.get('per_page', 20)), 50)  # Limit max per page
+            
+            logger.info(f"Getting external content - source: {source}, query: {search_query}")
             
             # Determine sources to search
             valid_sources = ['youtube', 'spotify', 'huggingface']
@@ -167,7 +175,8 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                 return Response({
                     'error': 'Invalid source specified',
                     'results': [],
-                    'count': 0
+                    'count': 0,
+                    'valid_sources': valid_sources
                 })
             
             # Get content from aggregator
@@ -175,9 +184,11 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
             cached_result = cache.get(cache_key)
             
             if cached_result:
+                logger.info("Returning cached content")
                 return Response(cached_result)
             
             # Fresh data fetch
+            logger.info(f"Fetching fresh content from sources: {sources}")
             if search_query:
                 content = content_aggregator.search_external_content(
                     query=search_query,
@@ -189,6 +200,8 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                     sources=sources,
                     max_per_source=per_page
                 )
+            
+            logger.info(f"Retrieved {len(content)} items from content aggregator")
             
             # Apply additional filters
             content = self._apply_external_filters(content, request)
@@ -204,18 +217,24 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                 'page': page,
                 'per_page': per_page,
                 'has_next': end_idx < len(content),
-                'sources_searched': sources
+                'sources_searched': sources,
+                'debug_info': f"Successfully fetched content from {len(sources)} sources"
             }
             
             # Cache for 30 minutes
             cache.set(cache_key, result, 1800)
             
+            logger.info(f"Returning {len(paginated_content)} items to frontend")
             return Response(result)
             
         except Exception as e:
-            logger.error(f'Error getting external content: {str(e)}')
+            logger.error(f'Error getting external content: {str(e)}', exc_info=True)
             return Response(
-                {'error': 'Failed to fetch external content', 'details': str(e)},
+                {
+                    'error': 'Failed to fetch external content', 
+                    'details': str(e),
+                    'debug_info': 'Check logs for detailed error information'
+                },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
     
