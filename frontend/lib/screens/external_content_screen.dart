@@ -5,7 +5,7 @@ import '../providers/meditation_provider.dart';
 import '../widgets/source_filter_chips.dart';
 
 class ExternalContentScreen extends StatefulWidget {
-  const ExternalContentScreen({super.key});
+  const ExternalContentScreen({Key? key}) : super(key: key);
 
   @override
   State<ExternalContentScreen> createState() => _ExternalContentScreenState();

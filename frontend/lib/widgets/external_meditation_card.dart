@@ -6,10 +6,10 @@ class ExternalMeditationCard extends StatelessWidget {
   final VoidCallback onTap;
 
   const ExternalMeditationCard({
-    super.key,
+    Key? key,
     required this.meditation,
     required this.onTap,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

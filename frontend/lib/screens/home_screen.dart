@@ -127,7 +127,40 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FeatureCard(
+                            icon: Icons.cloud_download,
+                            title: 'Discover More',
+                            subtitle: 'YouTube, Spotify & AI',
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFF6B6B), Color(0xFFFF8E53)],
+                            ),
+                            onTap: () {
+                              Navigator.pushNamed(context, '/external-content');
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: FeatureCard(
+                            icon: Icons.favorite,
+                            title: 'Favorites',
+                            subtitle: 'Your saved content',
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFE91E63), Color(0xFFF06292)],
+                            ),
+                            onTap: () {
+                              Navigator.pushNamed(
+                                  context, '/meditation-library');
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
 
                     // Quick Actions
                     const Text(
