@@ -1,3 +1,4 @@
+// frontend/lib/screens/external_content_screen.dart
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/external_meditation_card.dart';
 import 'package:provider/provider.dart';
@@ -12,6 +13,8 @@ class ExternalContentScreen extends StatefulWidget {
 }
 
 class _ExternalContentScreenState extends State<ExternalContentScreen> {
+  final ScrollController _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
@@ -19,6 +22,26 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
       final provider = Provider.of<MeditationProvider>(context, listen: false);
       provider.loadExternalMeditations();
     });
+
+    // Add scroll listener for pagination
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      // Load more when user is near the bottom
+      final provider = Provider.of<MeditationProvider>(context, listen: false);
+      if (provider.canLoadMore) {
+        provider.loadMoreExternalMeditations();
+      }
+    }
   }
 
   @override
@@ -42,8 +65,8 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.bug_report),
-            onPressed: () => _showDebugInfo(),
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => _showStatsInfo(),
           ),
         ],
       ),
@@ -74,10 +97,37 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
                 ),
               ),
 
+              // Pagination Info
+              if (provider.externalMeditations.isNotEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        provider.getPaginationInfo(),
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                      if (provider.hasNextPage)
+                        Text(
+                          'Scroll for more',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue[600],
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+
               // Error Display
               if (provider.externalError != null)
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  margin: const EdgeInsets.all(16),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.orange.withOpacity(0.1),
@@ -114,7 +164,7 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
   }
 
   Widget _buildContent(MeditationProvider provider) {
-    if (provider.isLoadingExternal) {
+    if (provider.isLoadingExternal && provider.externalMeditations.isEmpty) {
       return const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -162,6 +212,7 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
             ElevatedButton(
               onPressed: () => provider.loadExternalMeditations(
                 source: provider.selectedSource,
+                refresh: true,
               ),
               child: const Text('Retry'),
             ),
@@ -173,60 +224,144 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
     return RefreshIndicator(
       onRefresh: () => provider.loadExternalMeditations(
         source: provider.selectedSource,
+        refresh: true,
       ),
-      child: GridView.builder(
-        padding: const EdgeInsets.all(16),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.8,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-        ),
-        itemCount: provider.externalMeditations.length,
-        itemBuilder: (context, index) {
-          final meditation = provider.externalMeditations[index];
-          return ExternalMeditationCard(
-            meditation: meditation,
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/meditation-detail',
-                arguments: {'meditation': meditation},
-              );
-            },
-          );
-        },
+      child: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverPadding(
+            padding: const EdgeInsets.all(16),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.8,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final meditation = provider.externalMeditations[index];
+                  return ExternalMeditationCard(
+                    meditation: meditation,
+                    onTap: () {
+                      Navigator.pushNamed(
+                        context,
+                        '/meditation-detail',
+                        arguments: {'meditation': meditation},
+                      );
+                    },
+                  );
+                },
+                childCount: provider.externalMeditations.length,
+              ),
+            ),
+          ),
+
+          // Loading more indicator
+          if (provider.isLoadingMore)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(16),
+                child: Center(
+                  child: Column(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 8),
+                      Text('Loading more content...'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+
+          // End of content indicator
+          if (!provider.hasNextPage && provider.externalMeditations.isNotEmpty)
+            SliverToBoxAdapter(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.check_circle,
+                        color: Colors.green[400],
+                        size: 32,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'You\'ve seen all content for ${provider.selectedSource}',
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontStyle: FontStyle.italic,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Try a different source to see more content',
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 12,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  void _showDebugInfo() async {
+  void _showStatsInfo() {
     final provider = Provider.of<MeditationProvider>(context, listen: false);
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Debug Info'),
+        title: const Text('Content Statistics'),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Selected Source: ${provider.selectedSource}'),
-              Text(
-                  'External Meditations: ${provider.externalMeditations.length}'),
-              Text('Is Loading: ${provider.isLoadingExternal}'),
-              Text('Error: ${provider.externalError ?? 'None'}'),
+              _buildStatRow(
+                  'Selected Source', provider.selectedSource.toUpperCase()),
+              _buildStatRow('Total Available', '${provider.totalCount}'),
+              _buildStatRow(
+                  'Currently Loaded', '${provider.externalMeditations.length}'),
+              _buildStatRow('Current Page',
+                  '${provider.currentPage} of ${provider.totalPages}'),
+              _buildStatRow('Per Page Limit', '${provider.perPage}'),
+              _buildStatRow('Has More', provider.hasNextPage ? 'Yes' : 'No'),
               const SizedBox(height: 16),
-              const Text('Sample meditation:'),
-              if (provider.externalMeditations.isNotEmpty)
-                Text(
-                  'ID: ${provider.externalMeditations.first.id}\n'
-                  'Name: ${provider.externalMeditations.first.name}\n'
-                  'Source: ${provider.externalMeditations.first.source}\n'
-                  'Type: ${provider.externalMeditations.first.type}',
-                  style: const TextStyle(fontSize: 12),
-                ),
+              Text(
+                'Content Sources:',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 8),
+              ...provider.availableSources.map((source) => Padding(
+                    padding: const EdgeInsets.only(left: 8, bottom: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          source == provider.selectedSource
+                              ? Icons.radio_button_checked
+                              : Icons.radio_button_unchecked,
+                          size: 16,
+                          color: source == provider.selectedSource
+                              ? Colors.blue
+                              : Colors.grey,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(source == 'all'
+                            ? 'All Sources'
+                            : source.toUpperCase()),
+                      ],
+                    ),
+                  )),
             ],
           ),
         ),
@@ -235,6 +370,20 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Close'),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label + ':',
+              style: const TextStyle(fontWeight: FontWeight.w500)),
+          Text(value, style: const TextStyle(color: Colors.blue)),
         ],
       ),
     );

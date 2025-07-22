@@ -98,52 +98,9 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
         
         return queryset
     
-    @action(detail=True, methods=['post'])
-    def start_session(self, request, pk=None):
-        """Start a meditation session"""
-        meditation = self.get_object()
-        profile, _ = UserMeditationProfile.objects.get_or_create(user=request.user)
-        
-        # Get pre-mood score
-        pre_mood = request.data.get('mood_score', 5)
-        
-        session = MeditationSession.objects.create(
-            user_profile=profile,
-            meditation=meditation,
-            started_at=timezone.now(),
-            pre_mood_score=pre_mood
-        )
-        
-        # Update meditation play count
-        meditation.times_played = models.F('times_played') + 1
-        meditation.save(update_fields=['times_played'])
-        
-        # Mark recommendation as started
-        MeditationRecommendation.objects.filter(
-            user=request.user,
-            meditation=meditation,
-            started=False
-        ).update(started=True, viewed=True)
-        
-        return Response({
-            'session_id': session.id,
-            'meditation': MeditationSerializer(meditation).data,
-            'personalized_script': self._get_personalized_script(meditation, request.user)
-        })
-    
-    def _get_personalized_script(self, meditation, user):
-        """Get personalized meditation script"""
-        if meditation.script:
-            return meditation.script
-        elif meditation.instructions:
-            return "\n\n".join([f"Step {i+1}: {instruction}" 
-                              for i, instruction in enumerate(meditation.instructions)])
-        else:
-            return f"Begin your {meditation.get_type_display().lower()} meditation by finding a comfortable position..."
-    
     @action(detail=False, methods=['get'])
     def external_content(self, request):
-        """Get external meditation content with advanced filtering - FIXED METHOD"""
+        """Get external meditation content with advanced filtering - ENHANCED"""
         logger.info(f"External APIs available: {EXTERNAL_APIS_AVAILABLE}")
         
         if not EXTERNAL_APIS_AVAILABLE:
@@ -156,13 +113,13 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
             })
         
         try:
-            # Get query parameters
+            # Get query parameters - INCREASED LIMITS
             source = request.query_params.get('source', 'all')
             search_query = request.query_params.get('search', '')
             page = int(request.query_params.get('page', 1))
-            per_page = min(int(request.query_params.get('per_page', 20)), 50)
+            per_page = min(int(request.query_params.get('per_page', 50)), 100)  # INCREASED from 20 to 50, max 100
             
-            logger.info(f"Getting external content - source: {source}, query: {search_query}")
+            logger.info(f"Getting external content - source: {source}, query: {search_query}, per_page: {per_page}")
             
             # Determine sources to search
             valid_sources = ['youtube', 'spotify', 'huggingface']
@@ -179,18 +136,18 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                     'valid_sources': valid_sources
                 })
             
-            # Get content from aggregator
+            # Get content from aggregator - INCREASED LIMITS
             logger.info(f"Fetching content from sources: {sources}")
             if search_query:
                 content = content_aggregator.search_external_content(
                     query=search_query,
                     sources=sources,
-                    max_results=per_page * 2
+                    max_results=per_page * 3  # Get more results for filtering
                 )
             else:
                 content = content_aggregator.get_all_external_content(
                     sources=sources,
-                    max_per_source=per_page
+                    max_per_source=per_page  # INCREASED per source limit
                 )
             
             logger.info(f"Retrieved {len(content)} items from content aggregator")
@@ -245,6 +202,7 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                 'page': page,
                 'per_page': per_page,
                 'has_next': end_idx < len(formatted_content),
+                'total_pages': (len(formatted_content) + per_page - 1) // per_page,  # Added total pages
                 'sources_searched': sources,
                 'debug_info': f"Successfully fetched {len(paginated_content)} items from {len(sources)} sources"
             }
@@ -335,10 +293,10 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                 except Exception as e:
                     logger.warning(f'Could not clear cache pattern {pattern}: {e}')
             
-            # Force refresh of content (this could be moved to a background task)
+            # Force refresh of content - INCREASED LIMITS
             fresh_content = content_aggregator.get_all_external_content(
                 sources=['youtube', 'spotify', 'huggingface'],
-                max_per_source=20
+                max_per_source=50  # INCREASED from 20 to 50
             )
             
             # Update sync job

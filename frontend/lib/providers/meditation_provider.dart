@@ -1,3 +1,4 @@
+// frontend/lib/providers/meditation_provider.dart
 import 'package:flutter/material.dart';
 import 'package:frontend/services/api_service.dart';
 import '../models/meditation_models.dart';
@@ -38,15 +39,28 @@ class MeditationProvider extends ChangeNotifier {
 
   List<String> get levels => ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
+  // External content properties - ENHANCED with pagination
   List<Meditation> _externalMeditations = [];
   bool _isLoadingExternal = false;
   String _selectedSource = 'all';
   String? _externalError;
+  int _currentPage = 1;
+  bool _hasNextPage = false;
+  int _totalPages = 1;
+  int _totalCount = 0;
+  final int _perPage = 50; // INCREASED from 20 to 50
+  bool _isLoadingMore = false;
 
   List<Meditation> get externalMeditations => _externalMeditations;
   bool get isLoadingExternal => _isLoadingExternal;
+  bool get isLoadingMore => _isLoadingMore;
   String get selectedSource => _selectedSource;
   String? get externalError => _externalError;
+  int get currentPage => _currentPage;
+  bool get hasNextPage => _hasNextPage;
+  int get totalPages => _totalPages;
+  int get totalCount => _totalCount;
+  int get perPage => _perPage;
 
   List<String> get availableSources => [
         'all',
@@ -169,37 +183,102 @@ class MeditationProvider extends ChangeNotifier {
     await loadMeditations();
   }
 
-  Future<void> loadExternalMeditations({String source = 'all'}) async {
-    if (_isLoadingExternal) return; // Prevent multiple simultaneous loads
+  // ENHANCED external content methods with pagination
+  Future<void> loadExternalMeditations({
+    String source = 'all',
+    bool refresh = false,
+  }) async {
+    if (_isLoadingExternal && !refresh) return;
 
     _isLoadingExternal = true;
     _externalError = null;
+
+    if (refresh || _selectedSource != source) {
+      // Reset pagination for new source or refresh
+      _currentPage = 1;
+      _externalMeditations = [];
+    }
+
+    _selectedSource = source;
     notifyListeners();
 
     try {
-      print('Loading external meditations for source: $source');
+      print(
+          'Loading external meditations for source: $source, page: $_currentPage');
 
-      // First, let's debug what's available
-      final debugInfo = await ApiService.debugExternalContent();
-      print('Debug info: $debugInfo');
+      final result = await ApiService.getExternalMeditationsWithPagination(
+        source: source,
+        page: _currentPage,
+        perPage: _perPage,
+      );
 
-      final meditations =
-          await ApiService.getExternalMeditations(source: source);
-      print('Received ${meditations.length} external meditations');
+      if (result.containsKey('error')) {
+        _externalError = result['error'];
+      } else {
+        final meditations = result['meditations'] as List<Meditation>;
+        final pagination = result['pagination'] as Map<String, dynamic>;
 
-      _externalMeditations = meditations;
-      _selectedSource = source;
+        if (_currentPage == 1) {
+          _externalMeditations = meditations;
+        } else {
+          _externalMeditations.addAll(meditations);
+        }
 
-      if (meditations.isEmpty) {
-        _externalError =
-            'No content available for this source. The service may be temporarily unavailable.';
+        _totalCount = pagination['count'] ?? 0;
+        _hasNextPage = pagination['has_next'] ?? false;
+        _totalPages = pagination['total_pages'] ?? 1;
+
+        print(
+            'Loaded ${meditations.length} external meditations, total: $_totalCount');
+
+        if (meditations.isEmpty && _currentPage == 1) {
+          _externalError =
+              'No content available for this source. The service may be temporarily unavailable.';
+        }
       }
     } catch (e) {
       _externalError = 'Failed to load external content: $e';
       print('Error loading external meditations: $e');
-      _externalMeditations = [];
+      if (_currentPage == 1) {
+        _externalMeditations = [];
+      }
     } finally {
       _isLoadingExternal = false;
+      notifyListeners();
+    }
+  }
+
+  // Load more content (pagination)
+  Future<void> loadMoreExternalMeditations() async {
+    if (!_hasNextPage || _isLoadingMore || _isLoadingExternal) return;
+
+    _isLoadingMore = true;
+    notifyListeners();
+
+    try {
+      print('Loading more external meditations, page: ${_currentPage + 1}');
+
+      final result = await ApiService.getExternalMeditationsWithPagination(
+        source: _selectedSource,
+        page: _currentPage + 1,
+        perPage: _perPage,
+      );
+
+      if (!result.containsKey('error')) {
+        final meditations = result['meditations'] as List<Meditation>;
+        final pagination = result['pagination'] as Map<String, dynamic>;
+
+        _externalMeditations.addAll(meditations);
+        _currentPage++;
+        _hasNextPage = pagination['has_next'] ?? false;
+
+        print(
+            'Loaded ${meditations.length} more meditations, total now: ${_externalMeditations.length}');
+      }
+    } catch (e) {
+      print('Error loading more external meditations: $e');
+    } finally {
+      _isLoadingMore = false;
       notifyListeners();
     }
   }
@@ -207,7 +286,7 @@ class MeditationProvider extends ChangeNotifier {
   Future<void> refreshExternalContent() async {
     try {
       await ApiService.refreshContent();
-      await loadExternalMeditations(source: _selectedSource);
+      await loadExternalMeditations(source: _selectedSource, refresh: true);
     } catch (e) {
       _externalError = 'Failed to refresh content: $e';
       notifyListeners();
@@ -217,6 +296,8 @@ class MeditationProvider extends ChangeNotifier {
   void setSource(String source) {
     if (_selectedSource != source) {
       _selectedSource = source;
+      _currentPage = 1;
+      _externalMeditations = [];
       loadExternalMeditations(source: source);
     }
   }
@@ -225,4 +306,18 @@ class MeditationProvider extends ChangeNotifier {
     _externalError = null;
     notifyListeners();
   }
+
+  // Get pagination info for UI
+  String getPaginationInfo() {
+    if (_totalCount == 0) return 'No results';
+
+    final start = (_currentPage - 1) * _perPage + 1;
+    final end = (_currentPage * _perPage).clamp(0, _totalCount);
+
+    return 'Showing $start-$end of $_totalCount results (Page $_currentPage of $_totalPages)';
+  }
+
+  // Check if we can load more
+  bool get canLoadMore =>
+      _hasNextPage && !_isLoadingMore && !_isLoadingExternal;
 }

@@ -1,3 +1,4 @@
+# backend/meditation/external_apis/content_aggregator.py
 from typing import List, Dict, Optional
 from django.core.cache import cache
 from django.conf import settings
@@ -69,7 +70,7 @@ class ContentAggregator:
         logger.info(f"ContentAggregator initialized with {len(self.services)} working services: {list(self.services.keys())}")
     
     def get_all_external_content(self, sources: List[str] = None, 
-                               max_per_source: int = 20) -> List[Dict]:
+                               max_per_source: int = 50) -> List[Dict]:  # INCREASED default limit
         """Aggregate content from all external sources"""
         if sources is None:
             sources = list(self.services.keys())
@@ -90,8 +91,8 @@ class ContentAggregator:
             
         all_content = []
         
-        # Use thread pool for concurrent API calls (reduced workers to be conservative)
-        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+        # Use thread pool for concurrent API calls
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:  # Increased workers
             futures = {}
             
             for source in sources:
@@ -103,7 +104,7 @@ class ContentAggregator:
             for future in concurrent.futures.as_completed(futures):
                 source = futures[future]
                 try:
-                    content = future.result(timeout=45)  # Increased timeout
+                    content = future.result(timeout=60)  # Increased timeout
                     if content:
                         all_content.extend(content)
                         logger.info(f'Retrieved {len(content)} items from {source}')
@@ -115,8 +116,8 @@ class ContentAggregator:
         # Sort by effectiveness score
         all_content.sort(key=lambda x: x.get('effectiveness_score', 0), reverse=True)
         
-        # Cache for 1 hour (reduced cache time for testing)
-        cache.set(cache_key, all_content, 3600)
+        # Cache for 2 hours (reduced for more frequent updates)
+        cache.set(cache_key, all_content, 7200)
         
         logger.info(f"Total content aggregated: {len(all_content)} items")
         return all_content
@@ -149,9 +150,9 @@ class ContentAggregator:
             return []
     
     def search_external_content(self, query: str, sources: List[str] = None,
-                              max_results: int = 20) -> List[Dict]:
+                              max_results: int = 50) -> List[Dict]:  # INCREASED default
         """Search external content with a specific query"""
-        all_content = self.get_all_external_content(sources)
+        all_content = self.get_all_external_content(sources, max_results)
         
         if not query:
             return all_content[:max_results]
@@ -199,7 +200,7 @@ class ContentAggregator:
         return min(1.0, score / len(query_words)) if query_words else 0
     
     def get_personalized_recommendations(self, user_preferences: Dict,
-                                       max_results: int = 10) -> List[Dict]:
+                                       max_results: int = 20) -> List[Dict]:
         """Get personalized content recommendations"""
         all_content = self.get_all_external_content()
         

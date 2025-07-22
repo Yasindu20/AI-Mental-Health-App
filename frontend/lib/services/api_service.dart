@@ -1,3 +1,4 @@
+// frontend/lib/services/api_service.dart
 import 'dart:convert';
 import 'package:frontend/models/meditation_models.dart';
 import 'package:http/http.dart' as http;
@@ -195,17 +196,18 @@ class ApiService {
     }
   }
 
-  // Get external content meditations
+  // Get external content meditations - ENHANCED with higher limits
   static Future<List<Meditation>> getExternalMeditations({
     String source = 'all',
     int page = 1,
+    int perPage = 50, // INCREASED from 20 to 50
     String search = '',
   }) async {
     try {
       final queryParams = {
         'source': source,
         'page': page.toString(),
-        'per_page': '20',
+        'per_page': perPage.toString(), // Use dynamic per_page
       };
 
       if (search.isNotEmpty) {
@@ -276,7 +278,89 @@ class ApiService {
     }
   }
 
-// Add debug method
+  // Get external content with pagination info - NEW METHOD
+  static Future<Map<String, dynamic>> getExternalMeditationsWithPagination({
+    String source = 'all',
+    int page = 1,
+    int perPage = 50,
+    String search = '',
+  }) async {
+    try {
+      final queryParams = {
+        'source': source,
+        'page': page.toString(),
+        'per_page': perPage.toString(),
+      };
+
+      if (search.isNotEmpty) {
+        queryParams['search'] = search;
+      }
+
+      final query = queryParams.entries
+          .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
+          .join('&');
+
+      final data = await get('/meditations/external_content/?$query');
+
+      if (data is Map) {
+        if (data.containsKey('error')) {
+          throw Exception(data['error'] ?? 'Unknown error occurred');
+        }
+
+        final results = data['results'] as List? ?? [];
+        final meditations = <Meditation>[];
+
+        for (var item in results) {
+          try {
+            final meditation = Meditation.fromJson(item);
+            meditations.add(meditation);
+          } catch (e) {
+            print('Error parsing meditation item: $e');
+          }
+        }
+
+        return {
+          'meditations': meditations,
+          'pagination': {
+            'count': data['count'] ?? 0,
+            'page': data['page'] ?? page,
+            'per_page': data['per_page'] ?? perPage,
+            'has_next': data['has_next'] ?? false,
+            'total_pages': data['total_pages'] ?? 1,
+          },
+          'sources_searched': data['sources_searched'] ?? [source],
+        };
+      }
+
+      return {
+        'meditations': <Meditation>[],
+        'pagination': {
+          'count': 0,
+          'page': page,
+          'per_page': perPage,
+          'has_next': false,
+          'total_pages': 1,
+        },
+        'sources_searched': [source],
+      };
+    } catch (e) {
+      print('Error getting external meditations with pagination: $e');
+      return {
+        'meditations': <Meditation>[],
+        'pagination': {
+          'count': 0,
+          'page': page,
+          'per_page': perPage,
+          'has_next': false,
+          'total_pages': 1,
+        },
+        'sources_searched': [source],
+        'error': e.toString(),
+      };
+    }
+  }
+
+  // Add debug method
   static Future<Map<String, dynamic>> debugExternalContent() async {
     try {
       return await get('/debug/external-content/');
@@ -288,7 +372,7 @@ class ApiService {
   // Refresh content (admin only)
   static Future<Map<String, dynamic>> refreshContent() async {
     try {
-      return await post('/meditations/refresh_content/');
+      return await post('/meditations/refresh_external_content/');
     } catch (e) {
       print('Error refreshing content: $e');
       throw Exception('Failed to refresh content');

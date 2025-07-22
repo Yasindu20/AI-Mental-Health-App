@@ -1,3 +1,4 @@
+# backend/meditation/external_apis/spotify_service.py
 import os
 import base64
 import requests
@@ -32,7 +33,7 @@ class SpotifyService:
             if access_token:
                 # Test with a simple search
                 headers = {'Authorization': f'Bearer {access_token}'}
-                params = {'q': 'meditation', 'type': 'track', 'limit': 1}
+                params = {'q': 'meditation', 'type': 'track', 'limit': 1}  # FIXED: Valid limit
                 
                 response = requests.get(
                     'https://api.spotify.com/v1/search',
@@ -115,7 +116,7 @@ class SpotifyService:
             logger.error(f'Error getting Spotify access token: {str(e)}')
             return ''
     
-    def search_meditation_playlists(self, max_results: int = 20) -> List[Dict]:
+    def search_meditation_playlists(self, max_results: int = 50) -> List[Dict]:  # FIXED: Increased default
         """Search for meditation playlists on Spotify"""
         cache_key = f'spotify_playlists_{max_results}'
         cached_result = cache.get(cache_key)
@@ -140,8 +141,9 @@ class SpotifyService:
         
         for query in search_queries:
             try:
-                tracks = self._search_tracks(access_token, query, 
-                                           limit=max_results // len(search_queries))
+                # FIXED: Use valid limit values (1-50 for Spotify)
+                limit_per_query = min(max_results // len(search_queries), 50)
+                tracks = self._search_tracks(access_token, query, limit=limit_per_query)
                 all_tracks.extend(tracks)
                 logger.info(f"Found {len(tracks)} tracks for query: {query}")
                 
@@ -159,9 +161,12 @@ class SpotifyService:
         logger.info(f"Returning {len(unique_tracks)} unique Spotify tracks")
         return unique_tracks[:max_results]
     
-    def _search_tracks(self, access_token: str, query: str, limit: int = 5) -> List[Dict]:
+    def _search_tracks(self, access_token: str, query: str, limit: int = 20) -> List[Dict]:
         """Search for tracks on Spotify"""
         headers = {'Authorization': f'Bearer {access_token}'}
+        
+        # FIXED: Ensure limit is within valid range (1-50)
+        limit = max(1, min(limit, 50))
         
         params = {
             'q': query,
@@ -214,7 +219,7 @@ class SpotifyService:
                     'level': 'beginner',  # Default for Spotify content
                     'artist_name': self._get_artists_string(track),
                     'album_name': track.get('album', {}).get('name', ''),
-                    'popularity': track.get('popularity', 0),
+                    'spotify_popularity': track.get('popularity', 0),  # FIXED: Use spotify_popularity
                     'effectiveness_score': self._calculate_spotify_effectiveness(track),
                     'tags': self._extract_spotify_tags(track.get('name', '')),
                     'target_states': self._detect_spotify_target_states(track.get('name', '')),
