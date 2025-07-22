@@ -1,4 +1,3 @@
-# backend/meditation/external_apis/spotify_service.py
 import os
 import base64
 import requests
@@ -11,16 +10,55 @@ logger = logging.getLogger(__name__)
 
 class SpotifyService:
     def __init__(self):
-        # Try to get credentials from settings first, then environment
+        # Get credentials from settings first, then environment
         config = getattr(settings, 'EXTERNAL_API_CONFIG', {})
-        self.client_id = config.get('SPOTIFY_CLIENT_ID') or os.getenv('SPOTIFY_CLIENT_ID')
-        self.client_secret = config.get('SPOTIFY_CLIENT_SECRET') or os.getenv('SPOTIFY_CLIENT_SECRET')
+        self.client_id = config.get('SPOTIFY_CLIENT_ID') or os.getenv('SPOTIFY_CLIENT_ID', '').strip()
+        self.client_secret = config.get('SPOTIFY_CLIENT_SECRET') or os.getenv('SPOTIFY_CLIENT_SECRET', '').strip()
         self.access_token = None
         
-        if self.client_id and self.client_secret:
-            logger.info("Spotify credentials found and service initialized")
-        else:
-            logger.warning("Spotify credentials not found")
+        logger.info(f"Spotify client_id present: {'Yes' if self.client_id else 'No'}")
+        logger.info(f"Spotify client_secret present: {'Yes' if self.client_secret else 'No'}")
+        if self.client_id:
+            logger.info(f"Spotify client_id: {self.client_id[:10]}...")
+    
+    def test_api_connection(self) -> bool:
+        """Test if the Spotify API is working"""
+        if not self.client_id or not self.client_secret:
+            logger.error("Spotify credentials not configured")
+            return False
+            
+        try:
+            access_token = self._get_access_token()
+            if access_token:
+                # Test with a simple search
+                headers = {'Authorization': f'Bearer {access_token}'}
+                params = {'q': 'meditation', 'type': 'track', 'limit': 1}
+                
+                response = requests.get(
+                    'https://api.spotify.com/v1/search',
+                    headers=headers,
+                    params=params,
+                    timeout=10
+                )
+                
+                if response.status_code == 200:
+                    data = response.json()
+                    if 'tracks' in data and data['tracks']['items']:
+                        logger.info("Spotify API connection successful")
+                        return True
+                    else:
+                        logger.error(f"Spotify API returned no tracks: {data}")
+                        return False
+                else:
+                    logger.error(f"Spotify API error: {response.status_code} - {response.text}")
+                    return False
+            else:
+                logger.error("Failed to get Spotify access token")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Spotify API connection test failed: {str(e)}")
+            return False
     
     def _get_access_token(self) -> str:
         """Get Spotify access token"""
@@ -32,6 +70,7 @@ class SpotifyService:
         token = cache.get(cache_key)
         
         if token:
+            logger.debug("Using cached Spotify token")
             return token
             
         try:
@@ -47,29 +86,36 @@ class SpotifyService:
             
             data = {'grant_type': 'client_credentials'}
             
+            logger.info("Requesting Spotify access token...")
             response = requests.post(
                 'https://accounts.spotify.com/api/token',
                 headers=headers,
                 data=data,
                 timeout=10
             )
-            response.raise_for_status()
             
+            if response.status_code != 200:
+                logger.error(f"Spotify token request failed: {response.status_code} - {response.text}")
+                return ''
+                
             token_data = response.json()
-            access_token = token_data['access_token']
+            access_token = token_data.get('access_token')
             expires_in = token_data.get('expires_in', 3600)
             
-            # Cache token for slightly less than expiry time
-            cache.set(cache_key, access_token, expires_in - 60)
-            
-            logger.info("Spotify access token obtained successfully")
-            return access_token
+            if access_token:
+                # Cache token for slightly less than expiry time
+                cache.set(cache_key, access_token, expires_in - 60)
+                logger.info("Spotify access token obtained successfully")
+                return access_token
+            else:
+                logger.error(f"No access token in Spotify response: {token_data}")
+                return ''
             
         except Exception as e:
             logger.error(f'Error getting Spotify access token: {str(e)}')
             return ''
     
-    def search_meditation_playlists(self, max_results: int = 50) -> List[Dict]:
+    def search_meditation_playlists(self, max_results: int = 20) -> List[Dict]:
         """Search for meditation playlists on Spotify"""
         cache_key = f'spotify_playlists_{max_results}'
         cached_result = cache.get(cache_key)
@@ -84,14 +130,10 @@ class SpotifyService:
             return []
             
         search_queries = [
-            'meditation',
-            'mindfulness',
-            'guided meditation',
-            'sleep meditation',
-            'relaxation',
-            'breathing exercises',
-            'stress relief meditation',
-            'anxiety meditation'
+            'meditation music',
+            'mindfulness ambient',
+            'relaxation sounds',
+            'sleep meditation'
         ]
         
         all_tracks = []
@@ -117,7 +159,7 @@ class SpotifyService:
         logger.info(f"Returning {len(unique_tracks)} unique Spotify tracks")
         return unique_tracks[:max_results]
     
-    def _search_tracks(self, access_token: str, query: str, limit: int = 10) -> List[Dict]:
+    def _search_tracks(self, access_token: str, query: str, limit: int = 5) -> List[Dict]:
         """Search for tracks on Spotify"""
         headers = {'Authorization': f'Bearer {access_token}'}
         
@@ -134,8 +176,11 @@ class SpotifyService:
             params=params,
             timeout=10
         )
-        response.raise_for_status()
         
+        if response.status_code != 200:
+            logger.error(f"Spotify search failed: {response.status_code} - {response.text}")
+            return []
+            
         data = response.json()
         return data.get('tracks', {}).get('items', [])
     
@@ -144,38 +189,46 @@ class SpotifyService:
         processed = []
         
         for track in tracks:
-            if not track:
+            try:
+                if not track:
+                    continue
+                    
+                duration_ms = track.get('duration_ms', 0)
+                duration_minutes = max(1, duration_ms // 60000)
+                
+                # Filter out very short tracks (less than 2 minutes)
+                if duration_minutes < 2:
+                    continue
+                    
+                meditation = {
+                    'id': f'spotify_{track["id"]}',
+                    'name': track.get('name', ''),
+                    'description': f'Spotify meditation track by {self._get_artists_string(track)}',
+                    'source': 'spotify',
+                    'external_id': track['id'],
+                    'audio_url': track.get('preview_url'),  # 30-second preview
+                    'spotify_url': track.get('external_urls', {}).get('spotify'),
+                    'thumbnail_url': self._get_album_image(track),
+                    'duration_minutes': duration_minutes,
+                    'type': self._detect_spotify_meditation_type(track.get('name', '')),
+                    'level': 'beginner',  # Default for Spotify content
+                    'artist_name': self._get_artists_string(track),
+                    'album_name': track.get('album', {}).get('name', ''),
+                    'popularity': track.get('popularity', 0),
+                    'effectiveness_score': self._calculate_spotify_effectiveness(track),
+                    'tags': self._extract_spotify_tags(track.get('name', '')),
+                    'target_states': self._detect_spotify_target_states(track.get('name', '')),
+                    'is_free': False,  # Spotify requires subscription
+                    'requires_subscription': True,
+                    'language': 'en'
+                }
+                
+                processed.append(meditation)
+                
+            except Exception as e:
+                logger.error(f'Error processing Spotify track: {str(e)}')
                 continue
                 
-            duration_ms = track.get('duration_ms', 0)
-            duration_minutes = max(1, duration_ms // 60000)
-            
-            # Filter out very short tracks (less than 3 minutes)
-            if duration_minutes < 3:
-                continue
-                
-            meditation = {
-                'id': f'spotify_{track["id"]}',
-                'name': track.get('name', ''),
-                'description': f'Spotify meditation track by {self._get_artists_string(track)}',
-                'source': 'spotify',
-                'external_id': track['id'],
-                'audio_url': track.get('preview_url'),  # 30-second preview
-                'spotify_url': track.get('external_urls', {}).get('spotify'),
-                'thumbnail_url': self._get_album_image(track),
-                'duration_minutes': duration_minutes,
-                'type': self._detect_spotify_meditation_type(track.get('name', '')),
-                'level': 'beginner',  # Default for Spotify content
-                'artist_name': self._get_artists_string(track),
-                'album_name': track.get('album', {}).get('name', ''),
-                'popularity': track.get('popularity', 0),
-                'effectiveness_score': self._calculate_spotify_effectiveness(track),
-                'tags': self._extract_spotify_tags(track.get('name', '')),
-                'target_states': self._detect_spotify_target_states(track.get('name', ''))
-            }
-            
-            processed.append(meditation)
-            
         return processed
     
     def _get_artists_string(self, track: Dict) -> str:
@@ -203,7 +256,6 @@ class SpotifyService:
             'sleep': ['sleep', 'bedtime', 'night', 'dream'],
             'nature': ['rain', 'ocean', 'forest', 'birds', 'nature'],
             'ambient': ['ambient', 'atmospheric', 'space'],
-            'binaural': ['binaural', 'hz', 'frequency'],
             'mantra': ['mantra', 'chant', 'om']
         }
         
@@ -263,9 +315,9 @@ class SpotifyService:
         
         duration_boost = 1.0
         if duration_minutes >= 10:
-            duration_boost = 1.2
-        elif duration_minutes >= 20:
-            duration_boost = 1.3
+            duration_boost = 1.1
+        elif duration_minutes >= 5:
+            duration_boost = 1.05
             
         final_score = min(1.0, popularity_score * duration_boost)
         
@@ -286,4 +338,10 @@ class SpotifyService:
         return unique_tracks
 
 # Initialize service
-spotify_service = SpotifyService()
+spotify_service = None
+try:
+    spotify_service = SpotifyService()
+    connection_status = spotify_service.test_api_connection()
+    logger.info(f"Spotify service initialized. Connection: {'OK' if connection_status else 'FAILED'}")
+except Exception as e:
+    logger.error(f"Failed to initialize Spotify service: {str(e)}")

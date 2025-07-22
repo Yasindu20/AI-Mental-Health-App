@@ -160,7 +160,7 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
             source = request.query_params.get('source', 'all')
             search_query = request.query_params.get('search', '')
             page = int(request.query_params.get('page', 1))
-            per_page = min(int(request.query_params.get('per_page', 20)), 50)  # Limit max per page
+            per_page = min(int(request.query_params.get('per_page', 20)), 50)
             
             logger.info(f"Getting external content - source: {source}, query: {search_query}")
             
@@ -180,20 +180,12 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                 })
             
             # Get content from aggregator
-            cache_key = f"external_content_{'+'.join(sources)}_{search_query}_{page}_{per_page}"
-            cached_result = cache.get(cache_key)
-            
-            if cached_result:
-                logger.info("Returning cached content")
-                return Response(cached_result)
-            
-            # Fresh data fetch
-            logger.info(f"Fetching fresh content from sources: {sources}")
+            logger.info(f"Fetching content from sources: {sources}")
             if search_query:
                 content = content_aggregator.search_external_content(
                     query=search_query,
                     sources=sources,
-                    max_results=per_page * 2  # Get more for filtering
+                    max_results=per_page * 2
                 )
             else:
                 content = content_aggregator.get_all_external_content(
@@ -206,25 +198,58 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
             # Apply additional filters
             content = self._apply_external_filters(content, request)
             
+            # Ensure consistent structure for frontend
+            formatted_content = []
+            for item in content:
+                # Normalize the structure to match frontend expectations
+                formatted_item = {
+                    'id': item.get('id', f"{item.get('source', 'unknown')}_{item.get('external_id', 'unknown')}"),
+                    'name': item.get('name', 'Untitled'),
+                    'type': item.get('type', 'mindfulness'),
+                    'level': item.get('level', 'beginner'),
+                    'duration_minutes': item.get('duration_minutes', 10),
+                    'description': item.get('description', ''),
+                    'instructions': item.get('instructions', []),
+                    'benefits': item.get('benefits', []),
+                    'target_states': item.get('target_states', []),
+                    'audio_url': item.get('audio_url', ''),
+                    'video_url': item.get('video_url', ''),
+                    'spotify_url': item.get('spotify_url', ''),
+                    'thumbnail_url': item.get('thumbnail_url', ''),
+                    'tags': item.get('tags', []),
+                    'effectiveness_score': float(item.get('effectiveness_score', 0.5)),
+                    'source': item.get('source', 'unknown'),
+                    'external_id': item.get('external_id', ''),
+                    'is_free': item.get('is_free', True),
+                    'requires_subscription': item.get('requires_subscription', False),
+                    'language': item.get('language', 'en'),
+                    # External platform specific fields
+                    'channel_name': item.get('channel_name', ''),
+                    'artist_name': item.get('artist_name', ''),
+                    'album_name': item.get('album_name', ''),
+                    'view_count': item.get('view_count', 0),
+                    'like_count': item.get('like_count', 0),
+                    'spotify_popularity': item.get('spotify_popularity', 0),
+                    'published_at': item.get('published_at', ''),
+                }
+                formatted_content.append(formatted_item)
+            
             # Pagination
             start_idx = (page - 1) * per_page
             end_idx = start_idx + per_page
-            paginated_content = content[start_idx:end_idx]
+            paginated_content = formatted_content[start_idx:end_idx]
             
             result = {
                 'results': paginated_content,
-                'count': len(content),
+                'count': len(formatted_content),
                 'page': page,
                 'per_page': per_page,
-                'has_next': end_idx < len(content),
+                'has_next': end_idx < len(formatted_content),
                 'sources_searched': sources,
-                'debug_info': f"Successfully fetched content from {len(sources)} sources"
+                'debug_info': f"Successfully fetched {len(paginated_content)} items from {len(sources)} sources"
             }
             
-            # Cache for 30 minutes
-            cache.set(cache_key, result, 1800)
-            
-            logger.info(f"Returning {len(paginated_content)} items to frontend")
+            logger.info(f"Returning {len(paginated_content)} formatted items to frontend")
             return Response(result)
             
         except Exception as e:
@@ -233,7 +258,9 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                 {
                     'error': 'Failed to fetch external content', 
                     'details': str(e),
-                    'debug_info': 'Check logs for detailed error information'
+                    'debug_info': 'Check logs for detailed error information',
+                    'results': [],
+                    'count': 0
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

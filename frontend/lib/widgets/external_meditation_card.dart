@@ -47,38 +47,25 @@ class ExternalMeditationCard extends StatelessWidget {
               ),
               child: Stack(
                 children: [
-                  // Source icon
-                  Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          _getSourceIcon(),
-                          size: 40,
-                          color: Colors.white,
+                  // Thumbnail or source icon
+                  if (meditation.thumbnailUrl?.isNotEmpty == true)
+                    Positioned.fill(
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
                         ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            _getSourceLabel(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                        child: Image.network(
+                          meditation.thumbnailUrl!,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildSourceIcon();
+                          },
                         ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    )
+                  else
+                    _buildSourceIcon(),
 
                   // Duration badge
                   Positioned(
@@ -104,7 +91,7 @@ class ExternalMeditationCard extends StatelessWidget {
                     ),
                   ),
 
-                  // Level badge
+                  // Source badge
                   Positioned(
                     bottom: 8,
                     left: 8,
@@ -114,16 +101,27 @@ class ExternalMeditationCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withOpacity(0.9),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: Text(
-                        meditation.level.toUpperCase(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _getSourceIcon(),
+                            size: 12,
+                            color: _getSourceColor(),
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            meditation.displaySource,
+                            style: TextStyle(
+                              color: _getSourceColor(),
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -157,6 +155,19 @@ class ExternalMeditationCard extends StatelessWidget {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    if (meditation.channelName?.isNotEmpty == true ||
+                        meditation.artistName?.isNotEmpty == true) ...[
+                      const SizedBox(height: 2),
+                      Text(
+                        meditation.channelName ?? meditation.artistName ?? '',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          color: Color(0xFF999999),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                     const Spacer(),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -178,18 +189,23 @@ class ExternalMeditationCard extends StatelessWidget {
                             ),
                           ],
                         ),
-                        if (meditation.videoUrl?.isNotEmpty == true)
-                          const Icon(
-                            Icons.play_circle,
-                            color: Colors.red,
-                            size: 16,
-                          ),
-                        if (meditation.audioUrl?.isNotEmpty == true)
-                          const Icon(
-                            Icons.headphones,
-                            color: Colors.green,
-                            size: 16,
-                          ),
+                        Row(
+                          children: [
+                            if (meditation.videoUrl?.isNotEmpty == true)
+                              const Icon(
+                                Icons.play_circle,
+                                color: Colors.red,
+                                size: 16,
+                              ),
+                            if (meditation.audioUrl?.isNotEmpty == true ||
+                                meditation.spotifyUrl?.isNotEmpty == true)
+                              const Icon(
+                                Icons.headphones,
+                                color: Colors.green,
+                                size: 16,
+                              ),
+                          ],
+                        ),
                       ],
                     ),
                   ],
@@ -202,40 +218,65 @@ class ExternalMeditationCard extends StatelessWidget {
     );
   }
 
+  Widget _buildSourceIcon() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            _getSourceIcon(),
+            size: 40,
+            color: Colors.white,
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 8,
+              vertical: 4,
+            ),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Text(
+              meditation.displaySource,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Color _getSourceColor() {
-    // Access the source through the meditation object
-    // Since we can't access the source field directly, we'll use type-based colors
-    switch (meditation.type.toLowerCase()) {
-      case 'breathing':
-        return Colors.blue;
-      case 'mindfulness':
+    switch (meditation.source) {
+      case 'youtube':
+        return Colors.red;
+      case 'spotify':
         return Colors.green;
-      case 'body_scan':
-        return Colors.purple;
-      case 'loving_kindness':
-        return Colors.pink;
+      case 'huggingface':
+      case 'huggingface_ai':
+        return Colors.orange;
       default:
         return const Color(0xFF6B4EFF);
     }
   }
 
   IconData _getSourceIcon() {
-    // Default icons based on content type
-    switch (meditation.type.toLowerCase()) {
-      case 'breathing':
-        return Icons.air;
-      case 'mindfulness':
-        return Icons.psychology;
-      case 'body_scan':
-        return Icons.accessibility_new;
-      case 'loving_kindness':
-        return Icons.favorite;
+    switch (meditation.source) {
+      case 'youtube':
+        return Icons.play_circle;
+      case 'spotify':
+        return Icons.library_music;
+      case 'huggingface':
+      case 'huggingface_ai':
+        return Icons.smart_toy;
       default:
         return Icons.spa;
     }
-  }
-
-  String _getSourceLabel() {
-    return meditation.type.replaceAll('_', ' ').toUpperCase();
   }
 }

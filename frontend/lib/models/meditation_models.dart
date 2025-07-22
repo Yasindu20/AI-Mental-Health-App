@@ -1,5 +1,5 @@
 class Meditation {
-  final int id;
+  final String id; // Changed to String to handle external IDs
   final String name;
   final String type;
   final String level;
@@ -10,8 +10,24 @@ class Meditation {
   final List<String> targetStates;
   final String? audioUrl;
   final String? videoUrl;
+  final String? spotifyUrl;
+  final String? thumbnailUrl;
   final List<String> tags;
   final double effectivenessScore;
+  final String source;
+  final String? externalId;
+  final bool isFree;
+  final bool requiresSubscription;
+  final String language;
+
+  // External platform specific fields
+  final String? channelName;
+  final String? artistName;
+  final String? albumName;
+  final int? viewCount;
+  final int? likeCount;
+  final int? spotifyPopularity;
+  final String? publishedAt;
 
   Meditation({
     required this.id,
@@ -25,13 +41,27 @@ class Meditation {
     required this.targetStates,
     this.audioUrl,
     this.videoUrl,
+    this.spotifyUrl,
+    this.thumbnailUrl,
     required this.tags,
     required this.effectivenessScore,
+    this.source = 'original',
+    this.externalId,
+    this.isFree = true,
+    this.requiresSubscription = false,
+    this.language = 'en',
+    this.channelName,
+    this.artistName,
+    this.albumName,
+    this.viewCount,
+    this.likeCount,
+    this.spotifyPopularity,
+    this.publishedAt,
   });
 
   factory Meditation.fromJson(Map<String, dynamic> json) {
     return Meditation(
-      id: json['id'] ?? 0,
+      id: json['id']?.toString() ?? 'unknown',
       name: json['name'] ?? 'Untitled',
       type: json['type'] ?? 'mindfulness',
       level: json['level'] ?? 'beginner',
@@ -47,9 +77,47 @@ class Meditation {
           : [],
       audioUrl: json['audio_url'],
       videoUrl: json['video_url'],
+      spotifyUrl: json['spotify_url'],
+      thumbnailUrl: json['thumbnail_url'],
       tags: json['tags'] != null ? List<String>.from(json['tags']) : [],
-      effectivenessScore: (json['effectiveness_score'] ?? 0.0).toDouble(),
+      effectivenessScore: (json['effectiveness_score'] ?? 0.5).toDouble(),
+      source: json['source'] ?? 'original',
+      externalId: json['external_id'],
+      isFree: json['is_free'] ?? true,
+      requiresSubscription: json['requires_subscription'] ?? false,
+      language: json['language'] ?? 'en',
+      channelName: json['channel_name'],
+      artistName: json['artist_name'],
+      albumName: json['album_name'],
+      viewCount: json['view_count'],
+      likeCount: json['like_count'],
+      spotifyPopularity: json['spotify_popularity'],
+      publishedAt: json['published_at'],
     );
+  }
+
+  bool get isExternal => source != 'original';
+
+  String get displaySource {
+    switch (source) {
+      case 'youtube':
+        return 'YouTube';
+      case 'spotify':
+        return 'Spotify';
+      case 'huggingface_ai':
+        return 'AI Generated';
+      case 'huggingface':
+        return 'HuggingFace';
+      default:
+        return source.toUpperCase();
+    }
+  }
+
+  String? get playableUrl {
+    if (videoUrl?.isNotEmpty == true) return videoUrl;
+    if (audioUrl?.isNotEmpty == true) return audioUrl;
+    if (spotifyUrl?.isNotEmpty == true) return spotifyUrl;
+    return null;
   }
 }
 

@@ -41,10 +41,12 @@ class MeditationProvider extends ChangeNotifier {
   List<Meditation> _externalMeditations = [];
   bool _isLoadingExternal = false;
   String _selectedSource = 'all';
+  String? _externalError;
 
   List<Meditation> get externalMeditations => _externalMeditations;
   bool get isLoadingExternal => _isLoadingExternal;
   String get selectedSource => _selectedSource;
+  String? get externalError => _externalError;
 
   List<String> get availableSources => [
         'all',
@@ -168,42 +170,46 @@ class MeditationProvider extends ChangeNotifier {
   }
 
   Future<void> loadExternalMeditations({String source = 'all'}) async {
+    if (_isLoadingExternal) return; // Prevent multiple simultaneous loads
+
     _isLoadingExternal = true;
-    _error = null;
+    _externalError = null;
     notifyListeners();
 
     try {
-      _externalMeditations =
+      print('Loading external meditations for source: $source');
+
+      // First, let's debug what's available
+      final debugInfo = await ApiService.debugExternalContent();
+      print('Debug info: $debugInfo');
+
+      final meditations =
           await ApiService.getExternalMeditations(source: source);
+      print('Received ${meditations.length} external meditations');
+
+      _externalMeditations = meditations;
       _selectedSource = source;
-      print('Loaded ${_externalMeditations.length} external meditations');
+
+      if (meditations.isEmpty) {
+        _externalError =
+            'No content available for this source. The service may be temporarily unavailable.';
+      }
     } catch (e) {
-      _error = e.toString();
+      _externalError = 'Failed to load external content: $e';
       print('Error loading external meditations: $e');
+      _externalMeditations = [];
     } finally {
       _isLoadingExternal = false;
       notifyListeners();
     }
   }
 
-  Future<void> refreshContent() async {
-    _isLoading = true;
-    notifyListeners();
-
+  Future<void> refreshExternalContent() async {
     try {
-      final result = await ApiService.refreshContent();
-      print('Content refresh result: $result');
-
-      // Reload both regular and external meditations
-      await Future.wait([
-        loadMeditations(),
-        loadExternalMeditations(source: _selectedSource),
-      ]);
+      await ApiService.refreshContent();
+      await loadExternalMeditations(source: _selectedSource);
     } catch (e) {
-      _error = e.toString();
-      print('Error refreshing content: $e');
-    } finally {
-      _isLoading = false;
+      _externalError = 'Failed to refresh content: $e';
       notifyListeners();
     }
   }
@@ -213,5 +219,10 @@ class MeditationProvider extends ChangeNotifier {
       _selectedSource = source;
       loadExternalMeditations(source: source);
     }
+  }
+
+  void clearExternalError() {
+    _externalError = null;
+    notifyListeners();
   }
 }

@@ -65,9 +65,9 @@ class MeditationService {
     }
   }
 
-  // Start meditation session
+  // Start meditation session - FIXED: Handle string IDs
   static Future<Map<String, dynamic>> startSession({
-    required int meditationId,
+    required String meditationId, // Changed from int to String
     required int moodScore,
   }) async {
     try {

@@ -34,6 +34,7 @@ def api_info_view(request):
         'public_endpoints': {
             'api_info': '/api/info/',
             'meditation_status': '/api/meditation/status/',
+            'external_content_test': '/api/external-content-test/',
             'register': '/api/register/',
             'login': '/api/login/',
         },
@@ -42,6 +43,7 @@ def api_info_view(request):
             'conversations': '/api/conversations/',
             'meditation_chat': '/api/meditation/chat/',
             'meditations': '/api/meditations/',
+            'external_content': '/api/meditations/external_content/',
             'recommendations': '/api/recommendations/',
             'sessions': '/api/sessions/',
             'profile': '/api/profile/',
@@ -55,6 +57,75 @@ def api_info_view(request):
         'note': 'To access protected endpoints, include: Authorization: Token YOUR_TOKEN'
     })
 
+# Public test endpoint for external content
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def external_content_test(request):
+    """Public test endpoint for external content"""
+    try:
+        from meditation.external_apis.content_aggregator import content_aggregator
+        
+        # Get service status
+        service_status = content_aggregator.get_service_status() if content_aggregator else {}
+        
+        # Get a small sample of content for testing
+        sample_content = []
+        if content_aggregator:
+            try:
+                sample_content = content_aggregator.get_all_external_content(max_per_source=3)
+            except Exception as e:
+                pass
+        
+        return Response({
+            'status': 'External Content API Test',
+            'service_status': service_status,
+            'available_services': [k for k, v in service_status.items() if v],
+            'sample_content_count': len(sample_content),
+            'sample_content': sample_content[:5],  # Only show first 5 items
+            'debug_info': 'This is a public test endpoint. Use /api/meditations/external_content/ with authentication for full access.',
+            'auth_required_for_full_access': True
+        })
+    except Exception as e:
+        return Response({
+            'error': 'Failed to test external content',
+            'details': str(e),
+            'debug_info': 'Check server logs for more details'
+        })
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def external_content_debug(request):
+    """Debug endpoint for external content - shows raw data"""
+    try:
+        from meditation.external_apis.content_aggregator import content_aggregator
+        
+        if not content_aggregator:
+            return Response({
+                'error': 'Content aggregator not available',
+                'debug': 'External APIs not properly initialized'
+            })
+        
+        # Get small sample from each source
+        youtube_content = content_aggregator.get_all_external_content(['youtube'], max_per_source=3)
+        spotify_content = content_aggregator.get_all_external_content(['spotify'], max_per_source=3)
+        huggingface_content = content_aggregator.get_all_external_content(['huggingface'], max_per_source=3)
+        
+        return Response({
+            'youtube_count': len(youtube_content),
+            'spotify_count': len(spotify_content),
+            'huggingface_count': len(huggingface_content),
+            'total_count': len(youtube_content) + len(spotify_content) + len(huggingface_content),
+            'sample_youtube': youtube_content[:1] if youtube_content else [],
+            'sample_spotify': spotify_content[:1] if spotify_content else [],
+            'sample_huggingface': huggingface_content[:1] if huggingface_content else [],
+            'services_status': content_aggregator.get_service_status(),
+        })
+    except Exception as e:
+        return Response({
+            'error': str(e),
+            'debug': 'Check server logs for details'
+        })
+
 # Simple root view for the main domain
 def root_view(request):
     """Root domain handler"""
@@ -63,6 +134,7 @@ def root_view(request):
         'status': 'running',
         'api_info': '/api/info/',
         'api_root': '/api/',
+        'external_content_test': '/api/external-content-test/',
         'version': '1.0.0'
     })
 
@@ -93,6 +165,7 @@ class PublicDefaultRouter(DefaultRouter):
                 'public_endpoints': {
                     'api_info': '/api/info/',
                     'meditation_status': '/api/meditation/status/',
+                    'external_content_test': '/api/external-content-test/',
                 }
             })
 
@@ -113,12 +186,17 @@ router.register(r'profile', UserMeditationProfileViewSet, basename='profile')
 urlpatterns = [
     # Root domain
     path('', root_view),
+
+    path('api/debug/external-content/', external_content_debug),
     
     # Admin
     path('admin/', admin.site.urls),
     
     # Public API info
     path('api/info/', api_info_view),
+    
+    # Public external content test endpoint
+    path('api/external-content-test/', external_content_test),
     
     # Authentication endpoints (public)
     path('api/register/', register),
