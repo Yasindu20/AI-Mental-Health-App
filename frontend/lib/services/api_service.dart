@@ -1,4 +1,3 @@
-// frontend/lib/services/api_service.dart
 import 'dart:convert';
 import 'package:frontend/models/meditation_models.dart';
 import 'package:http/http.dart' as http;
@@ -73,10 +72,7 @@ class ApiService {
 
   // Register
   static Future<Map<String, dynamic>> register(
-    String username,
-    String password,
-    String email,
-  ) async {
+      String username, String password, String email) async {
     await init();
 
     final response = await http.post(
@@ -98,9 +94,7 @@ class ApiService {
 
   // Login
   static Future<Map<String, dynamic>> login(
-    String username,
-    String password,
-  ) async {
+      String username, String password) async {
     await init();
 
     final response = await http.post(
@@ -196,22 +190,38 @@ class ApiService {
     }
   }
 
-  // Get external content meditations - ENHANCED with higher limits
-  static Future<List<Meditation>> getExternalMeditations({
+  // Enhanced get external content meditations with pagination
+  static Future<ExternalContentResponse> getExternalMeditations({
     String source = 'all',
     int page = 1,
-    int perPage = 50, // INCREASED from 20 to 50
+    int perPage = 20,
     String search = '',
+    String? type,
+    int? minDuration,
+    int? maxDuration,
+    double? minEffectiveness,
   }) async {
     try {
       final queryParams = {
         'source': source,
         'page': page.toString(),
-        'per_page': perPage.toString(), // Use dynamic per_page
+        'per_page': perPage.toString(),
       };
 
       if (search.isNotEmpty) {
         queryParams['search'] = search;
+      }
+      if (type != null) {
+        queryParams['type'] = type;
+      }
+      if (minDuration != null) {
+        queryParams['min_duration'] = minDuration.toString();
+      }
+      if (maxDuration != null) {
+        queryParams['max_duration'] = maxDuration.toString();
+      }
+      if (minEffectiveness != null) {
+        queryParams['min_effectiveness'] = minEffectiveness.toString();
       }
 
       final query = queryParams.entries
@@ -224,83 +234,6 @@ class ApiService {
       final data = await get('/meditations/external_content/?$query');
 
       print('API Response type: ${data.runtimeType}');
-      print(
-          'API Response keys: ${data is Map ? data.keys.toList() : 'Not a map'}');
-
-      if (data is Map) {
-        if (data.containsKey('error')) {
-          throw Exception(data['error'] ?? 'Unknown error occurred');
-        }
-
-        if (data.containsKey('results')) {
-          final results = data['results'] as List? ?? [];
-          print('Found ${results.length} results in response');
-
-          final meditations = <Meditation>[];
-          for (var item in results) {
-            try {
-              final meditation = Meditation.fromJson(item);
-              meditations.add(meditation);
-            } catch (e) {
-              print('Error parsing meditation item: $e');
-              print('Item data: $item');
-              // Continue with other items instead of failing completely
-            }
-          }
-
-          print('Successfully parsed ${meditations.length} meditations');
-          return meditations;
-        } else {
-          print('Response does not contain results key: ${data.keys}');
-          return [];
-        }
-      } else if (data is List) {
-        print('Response is a list with ${data.length} items');
-        final meditations = <Meditation>[];
-        for (var item in data) {
-          try {
-            final meditation = Meditation.fromJson(item);
-            meditations.add(meditation);
-          } catch (e) {
-            print('Error parsing meditation item: $e');
-            // Continue with other items
-          }
-        }
-        return meditations;
-      } else {
-        print('Unexpected response format: ${data.runtimeType}');
-        return [];
-      }
-    } catch (e) {
-      print('Error getting external meditations: $e');
-      // Don't throw, return empty list so UI can show appropriate message
-      return [];
-    }
-  }
-
-  // Get external content with pagination info - NEW METHOD
-  static Future<Map<String, dynamic>> getExternalMeditationsWithPagination({
-    String source = 'all',
-    int page = 1,
-    int perPage = 50,
-    String search = '',
-  }) async {
-    try {
-      final queryParams = {
-        'source': source,
-        'page': page.toString(),
-        'per_page': perPage.toString(),
-      };
-
-      if (search.isNotEmpty) {
-        queryParams['search'] = search;
-      }
-
-      final query = queryParams.entries
-          .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
-          .join('&');
-
-      final data = await get('/meditations/external_content/?$query');
 
       if (data is Map) {
         if (data.containsKey('error')) {
@@ -316,51 +249,52 @@ class ApiService {
             meditations.add(meditation);
           } catch (e) {
             print('Error parsing meditation item: $e');
+            continue;
           }
         }
 
-        return {
-          'meditations': meditations,
-          'pagination': {
-            'count': data['count'] ?? 0,
-            'page': data['page'] ?? page,
-            'per_page': data['per_page'] ?? perPage,
-            'has_next': data['has_next'] ?? false,
-            'total_pages': data['total_pages'] ?? 1,
-          },
-          'sources_searched': data['sources_searched'] ?? [source],
-        };
-      }
+        return ExternalContentResponse(
+          meditations: meditations,
+          currentPage: page,
+          totalCount: data['count'] ?? meditations.length,
+          hasNext: data['has_next'] ?? false,
+          perPage: perPage,
+        );
+      } else if (data is List) {
+        final meditations = <Meditation>[];
+        for (var item in data) {
+          try {
+            final meditation = Meditation.fromJson(item);
+            meditations.add(meditation);
+          } catch (e) {
+            print('Error parsing meditation item: $e');
+          }
+        }
 
-      return {
-        'meditations': <Meditation>[],
-        'pagination': {
-          'count': 0,
-          'page': page,
-          'per_page': perPage,
-          'has_next': false,
-          'total_pages': 1,
-        },
-        'sources_searched': [source],
-      };
+        // If it's a list response, assume no more pages for now
+        return ExternalContentResponse(
+          meditations: meditations,
+          currentPage: page,
+          totalCount: meditations.length,
+          hasNext: false,
+          perPage: perPage,
+        );
+      } else {
+        return ExternalContentResponse(
+          meditations: [],
+          currentPage: page,
+          totalCount: 0,
+          hasNext: false,
+          perPage: perPage,
+        );
+      }
     } catch (e) {
-      print('Error getting external meditations with pagination: $e');
-      return {
-        'meditations': <Meditation>[],
-        'pagination': {
-          'count': 0,
-          'page': page,
-          'per_page': perPage,
-          'has_next': false,
-          'total_pages': 1,
-        },
-        'sources_searched': [source],
-        'error': e.toString(),
-      };
+      print('Error getting external meditations: $e');
+      throw e; // Re-throw to handle in provider
     }
   }
 
-  // Add debug method
+  // Debug method
   static Future<Map<String, dynamic>> debugExternalContent() async {
     try {
       return await get('/debug/external-content/');
@@ -372,10 +306,30 @@ class ApiService {
   // Refresh content (admin only)
   static Future<Map<String, dynamic>> refreshContent() async {
     try {
-      return await post('/meditations/refresh_external_content/');
+      return await post('/meditations/refresh_content/');
     } catch (e) {
       print('Error refreshing content: $e');
       throw Exception('Failed to refresh content');
     }
   }
+}
+
+// New response class for paginated external content
+class ExternalContentResponse {
+  final List<Meditation> meditations;
+  final int currentPage;
+  final int totalCount;
+  final bool hasNext;
+  final int perPage;
+
+  ExternalContentResponse({
+    required this.meditations,
+    required this.currentPage,
+    required this.totalCount,
+    required this.hasNext,
+    required this.perPage,
+  });
+
+  int get totalPages => (totalCount / perPage).ceil();
+  bool get hasMore => hasNext;
 }

@@ -1,4 +1,3 @@
-// frontend/lib/screens/external_content_screen.dart
 import 'package:flutter/material.dart';
 import 'package:frontend/widgets/external_meditation_card.dart';
 import 'package:provider/provider.dart';
@@ -13,18 +12,19 @@ class ExternalContentScreen extends StatefulWidget {
 }
 
 class _ExternalContentScreenState extends State<ExternalContentScreen> {
-  final ScrollController _scrollController = ScrollController();
+  late ScrollController _scrollController;
+  bool _isLoadingMore = false;
 
   @override
   void initState() {
     super.initState();
+    _scrollController = ScrollController();
+    _scrollController.addListener(_onScroll);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<MeditationProvider>(context, listen: false);
       provider.loadExternalMeditations();
     });
-
-    // Add scroll listener for pagination
-    _scrollController.addListener(_onScroll);
   }
 
   @override
@@ -36,12 +36,35 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      // Load more when user is near the bottom
-      final provider = Provider.of<MeditationProvider>(context, listen: false);
-      if (provider.canLoadMore) {
-        provider.loadMoreExternalMeditations();
-      }
+      _loadMoreContent();
     }
+  }
+
+  Future<void> _loadMoreContent() async {
+    if (_isLoadingMore) return;
+
+    final provider = Provider.of<MeditationProvider>(context, listen: false);
+
+    if (!provider.hasMoreExternalContent || provider.isLoadingMoreExternal) {
+      return;
+    }
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    await provider.loadMoreExternalMeditations();
+
+    if (mounted) {
+      setState(() {
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  Future<void> _refreshContent() async {
+    final provider = Provider.of<MeditationProvider>(context, listen: false);
+    await provider.refreshExternalContent();
   }
 
   @override
@@ -52,21 +75,13 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: () async {
-              final provider =
-                  Provider.of<MeditationProvider>(context, listen: false);
-              await provider.refreshExternalContent();
-
-              if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Content refreshed!')),
-                );
-              }
-            },
+            onPressed: _refreshContent,
+            tooltip: 'Refresh Content',
           ),
           IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () => _showStatsInfo(),
+            icon: const Icon(Icons.bug_report),
+            onPressed: () => _showDebugInfo(),
+            tooltip: 'Debug Info',
           ),
         ],
       ),
@@ -74,55 +89,58 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
         builder: (context, provider, child) {
           return Column(
             children: [
-              // Source Filter
+              // Source Filter Header
               Container(
                 padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Content Sources',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Content Sources',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          '${provider.externalMeditations.length} items',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     SourceFilterChips(
                       sources: provider.availableSources,
                       selectedSource: provider.selectedSource,
-                      onSourceSelected: provider.setSource,
+                      onSourceSelected: (source) {
+                        provider.setSource(source);
+                        _scrollController.animateTo(
+                          0,
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOut,
+                        );
+                      },
                     ),
                   ],
                 ),
               ),
-
-              // Pagination Info
-              if (provider.externalMeditations.isNotEmpty)
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        provider.getPaginationInfo(),
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
-                      ),
-                      if (provider.hasNextPage)
-                        Text(
-                          'Scroll for more',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.blue[600],
-                            fontStyle: FontStyle.italic,
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
 
               // Error Display
               if (provider.externalError != null)
@@ -152,7 +170,7 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
                   ),
                 ),
 
-              // Content
+              // Content Area
               Expanded(
                 child: _buildContent(provider),
               ),
@@ -164,6 +182,7 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
   }
 
   Widget _buildContent(MeditationProvider provider) {
+    // Initial loading state
     if (provider.isLoadingExternal && provider.externalMeditations.isEmpty) {
       return const Center(
         child: Column(
@@ -182,6 +201,7 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
       );
     }
 
+    // Empty state
     if (provider.externalMeditations.isEmpty &&
         provider.externalError == null) {
       return Center(
@@ -221,11 +241,9 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
       );
     }
 
+    // Content grid with infinite scroll
     return RefreshIndicator(
-      onRefresh: () => provider.loadExternalMeditations(
-        source: provider.selectedSource,
-        refresh: true,
-      ),
+      onRefresh: _refreshContent,
       child: CustomScrollView(
         controller: _scrollController,
         slivers: [
@@ -258,16 +276,22 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
           ),
 
           // Loading more indicator
-          if (provider.isLoadingMore)
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.all(16),
-                child: Center(
+          if (provider.isLoadingMoreExternal)
+            SliverToBoxAdapter(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: const Center(
                   child: Column(
                     children: [
                       CircularProgressIndicator(),
                       SizedBox(height: 8),
-                      Text('Loading more content...'),
+                      Text(
+                        'Loading more content...',
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 14,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -275,7 +299,8 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
             ),
 
           // End of content indicator
-          if (!provider.hasNextPage && provider.externalMeditations.isNotEmpty)
+          if (!provider.hasMoreExternalContent &&
+              provider.externalMeditations.isNotEmpty)
             SliverToBoxAdapter(
               child: Container(
                 padding: const EdgeInsets.all(16),
@@ -283,85 +308,93 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
                   child: Column(
                     children: [
                       Icon(
-                        Icons.check_circle,
-                        color: Colors.green[400],
+                        Icons.done_all,
+                        color: Colors.grey[400],
                         size: 32,
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'You\'ve seen all content for ${provider.selectedSource}',
+                        'You\'ve reached the end!',
                         style: TextStyle(
                           color: Colors.grey[600],
-                          fontStyle: FontStyle.italic,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
-                        textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 8),
                       Text(
-                        'Try a different source to see more content',
+                        'Total: ${provider.externalMeditations.length} meditations',
                         style: TextStyle(
                           color: Colors.grey[500],
                           fontSize: 12,
                         ),
-                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      OutlinedButton(
+                        onPressed: () {
+                          _scrollController.animateTo(
+                            0,
+                            duration: const Duration(milliseconds: 500),
+                            curve: Curves.easeInOut,
+                          );
+                        },
+                        child: const Text('Back to Top'),
                       ),
                     ],
                   ),
                 ),
               ),
             ),
+
+          // Bottom padding
+          const SliverToBoxAdapter(
+            child: SizedBox(height: 16),
+          ),
         ],
       ),
     );
   }
 
-  void _showStatsInfo() {
+  void _showDebugInfo() async {
     final provider = Provider.of<MeditationProvider>(context, listen: false);
+    final debugInfo = provider.getDebugInfo(); // FIXED: Using public method
 
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Content Statistics'),
+        title: const Text('Debug Info'),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
-              _buildStatRow(
-                  'Selected Source', provider.selectedSource.toUpperCase()),
-              _buildStatRow('Total Available', '${provider.totalCount}'),
-              _buildStatRow(
-                  'Currently Loaded', '${provider.externalMeditations.length}'),
-              _buildStatRow('Current Page',
-                  '${provider.currentPage} of ${provider.totalPages}'),
-              _buildStatRow('Per Page Limit', '${provider.perPage}'),
-              _buildStatRow('Has More', provider.hasNextPage ? 'Yes' : 'No'),
-              const SizedBox(height: 16),
+              Text('Selected Source: ${debugInfo['selectedSource']}'),
               Text(
-                'Content Sources:',
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              ...provider.availableSources.map((source) => Padding(
-                    padding: const EdgeInsets.only(left: 8, bottom: 4),
-                    child: Row(
-                      children: [
-                        Icon(
-                          source == provider.selectedSource
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                          size: 16,
-                          color: source == provider.selectedSource
-                              ? Colors.blue
-                              : Colors.grey,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(source == 'all'
-                            ? 'All Sources'
-                            : source.toUpperCase()),
-                      ],
-                    ),
-                  )),
+                  'External Meditations: ${provider.externalMeditations.length}'),
+              Text('Current Page: ${provider.currentExternalPage}'),
+              Text('Has More Content: ${provider.hasMoreExternalContent}'),
+              Text('Is Loading: ${provider.isLoadingExternal}'),
+              Text('Is Loading More: ${provider.isLoadingMoreExternal}'),
+              Text('Error: ${debugInfo['externalError'] ?? 'None'}'),
+              const SizedBox(height: 16),
+              const Text('Pagination Status:'),
+              ...provider.availableSources.map((source) {
+                final meditations =
+                    debugInfo['externalMeditations'][source] ?? 0;
+                final page = debugInfo['currentPages'][source] ?? 1;
+                final hasMore = debugInfo['hasMoreContent'][source] ?? false;
+                return Text(
+                    '$source: $meditations items, page $page, hasMore: $hasMore');
+              }),
+              const SizedBox(height: 16),
+              const Text('Sample meditation:'),
+              if (provider.externalMeditations.isNotEmpty)
+                Text(
+                  'ID: ${provider.externalMeditations.first.id}\n'
+                  'Name: ${provider.externalMeditations.first.name}\n'
+                  'Source: ${provider.externalMeditations.first.source}\n'
+                  'Type: ${provider.externalMeditations.first.type}',
+                  style: const TextStyle(fontSize: 12),
+                ),
             ],
           ),
         ),
@@ -370,20 +403,14 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
             onPressed: () => Navigator.pop(context),
             child: const Text('Close'),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label + ':',
-              style: const TextStyle(fontWeight: FontWeight.w500)),
-          Text(value, style: const TextStyle(color: Colors.blue)),
+          TextButton(
+            onPressed: () {
+              provider.resetExternalContent();
+              provider.loadExternalMeditations(source: provider.selectedSource);
+              Navigator.pop(context);
+            },
+            child: const Text('Reset & Reload'),
+          ),
         ],
       ),
     );
