@@ -15,6 +15,30 @@ class YouTubeService:
         self.api_key = config.get('YOUTUBE_API_KEY') or os.getenv('YOUTUBE_API_KEY', '').strip()
         self.base_url = 'https://www.googleapis.com/youtube/v3'
         
+        # Predefined search queries for different pages
+        self.meditation_queries = [
+            'guided meditation for beginners',
+            'mindfulness meditation 10 minutes',
+            'breathing meditation relaxation',
+            'sleep meditation anxiety relief',
+            'body scan meditation stress',
+            'loving kindness meditation',
+            'chakra meditation healing',
+            'walking meditation nature',
+            'zen meditation focus',
+            'progressive muscle relaxation',
+            'meditation for depression',
+            'morning meditation energy',
+            'evening meditation peace',
+            'meditation for focus study',
+            'meditation for anger management',
+            'meditation for self love',
+            'meditation for gratitude',
+            'meditation for confidence',
+            'meditation for creativity',
+            'meditation for healing',
+        ]
+        
         logger.info(f"YouTube API key present: {'Yes' if self.api_key else 'No'}")
         if self.api_key:
             logger.info(f"YouTube API key: {self.api_key[:10]}...")
@@ -55,74 +79,83 @@ class YouTubeService:
             logger.error(f"YouTube API connection test failed: {str(e)}")
             return False
     
-    def search_meditations(self, query: str = 'guided meditation', 
-                          max_results: int = 25) -> List[Dict]:
-        """Search for meditation videos on YouTube"""
+    def search_paginated_meditations(self, page: int = 1, max_results: int = 20, 
+                                   search_query: str = '') -> Dict:
+        """NEW: Search for meditation videos with proper pagination support"""
         if not self.api_key:
             logger.error("YouTube API key not configured")
-            return []
+            return {'content': [], 'total_available': 0}
+        
+        try:
+            # Use custom search query or cycle through predefined queries
+            if search_query:
+                query = f"{search_query} meditation"
+            else:
+                # Cycle through different queries for different pages to get variety
+                query_index = (page - 1) % len(self.meditation_queries)
+                query = self.meditation_queries[query_index]
             
-        cache_key = f'youtube_search_{query}_{max_results}'
-        cached_result = cache.get(cache_key)
-        
-        if cached_result:
-            logger.info(f"Returning cached YouTube results for: {query}")
-            return cached_result
+            logger.info(f"YouTube paginated search: '{query}' (page {page})")
             
-        search_queries = [
-            'guided meditation for beginners',
-            'mindfulness meditation 10 minutes',
-            'breathing meditation relaxation',
-            'sleep meditation anxiety relief'
-        ]
-        
-        all_videos = []
-        
-        for search_query in search_queries[:2]:  # Limit to 2 queries to conserve quota
-            try:
-                params = {
-                    'part': 'snippet',
-                    'q': search_query,
-                    'key': self.api_key,
-                    'type': 'video',
-                    'maxResults': min(10, max_results // 2),
-                    'videoDuration': 'medium',  # 4-20 minutes
-                    'order': 'relevance',
-                    'safeSearch': 'strict',
-                    'videoDefinition': 'any'
-                }
+            # Calculate the starting point for this page
+            # YouTube API uses pageToken for pagination, but we'll simulate with different queries
+            # and use order parameters to get different results per page
+            
+            search_orders = ['relevance', 'viewCount', 'rating', 'date']
+            order = search_orders[(page - 1) % len(search_orders)]
+            
+            params = {
+                'part': 'snippet',
+                'q': query,
+                'key': self.api_key,
+                'type': 'video',
+                'maxResults': min(50, max_results),  # YouTube allows max 50 per request
+                'videoDuration': 'medium',  # 4-20 minutes
+                'order': order,
+                'safeSearch': 'strict',
+                'videoDefinition': 'any',
+                'publishedAfter': self._get_published_after_date(page),  # Vary by page for diversity
+            }
+            
+            response = requests.get(f'{self.base_url}/search', params=params, timeout=15)
+            
+            if response.status_code == 403:
+                logger.error("YouTube API quota exceeded or forbidden")
+                return {'content': [], 'total_available': 0}
                 
-                logger.info(f"Searching YouTube: {search_query}")
-                response = requests.get(f'{self.base_url}/search', params=params, timeout=15)
+            if response.status_code != 200:
+                logger.error(f"YouTube API error: {response.status_code} - {response.text}")
+                return {'content': [], 'total_available': 0}
+            
+            data = response.json()
+            items = data.get('items', [])
+            
+            # Estimate total available (YouTube doesn't provide exact counts)
+            total_results = data.get('pageInfo', {}).get('totalResults', 1000)
+            total_available = min(total_results, 1000)  # Cap at 1000 for API quota management
+            
+            logger.info(f"YouTube returned {len(items)} items for page {page} (estimated total: {total_available})")
+            
+            # Process videos
+            videos = self._process_youtube_videos(items)
+            
+            return {
+                'content': videos,
+                'total_available': total_available
+            }
                 
-                if response.status_code == 403:
-                    logger.error("YouTube API quota exceeded or forbidden")
-                    break
-                    
-                if response.status_code != 200:
-                    logger.error(f"YouTube API error: {response.status_code} - {response.text}")
-                    continue
-                
-                data = response.json()
-                items = data.get('items', [])
-                logger.info(f"YouTube returned {len(items)} items for: {search_query}")
-                
-                videos = self._process_youtube_videos(items)
-                all_videos.extend(videos)
-                logger.info(f"Processed {len(videos)} videos for query: {search_query}")
-                
-            except Exception as e:
-                logger.error(f'Error searching YouTube for "{search_query}": {str(e)}')
-                continue
+        except Exception as e:
+            logger.error(f'Error in YouTube paginated search: {str(e)}')
+            return {'content': [], 'total_available': 0}
+    
+    def _get_published_after_date(self, page: int) -> str:
+        """Get different date ranges for different pages to ensure variety"""
+        from datetime import datetime, timedelta
         
-        # Remove duplicates and filter quality
-        unique_videos = self._deduplicate_and_filter(all_videos)
-        
-        # Cache for 6 hours
-        cache.set(cache_key, unique_videos, 21600)
-        
-        logger.info(f"Returning {len(unique_videos)} unique YouTube videos")
-        return unique_videos[:max_results]
+        # Vary the date range based on page to get different content
+        days_ago = min(365, (page - 1) * 30)  # Go back further for later pages
+        date = datetime.now() - timedelta(days=days_ago)
+        return date.strftime('%Y-%m-%dT%H:%M:%SZ')
     
     def _process_youtube_videos(self, items: List[Dict]) -> List[Dict]:
         """Process YouTube API response into our format"""
@@ -169,9 +202,10 @@ class YouTubeService:
                 continue
         
         return processed
-    
+
+    # Keep all existing methods for processing videos
     def _get_video_details(self, video_id: str) -> Dict:
-        """Get detailed video information (uses additional API quota)"""
+        """Get detailed video information"""
         try:
             params = {
                 'part': 'contentDetails,statistics',
@@ -198,7 +232,8 @@ class YouTubeService:
             logger.warning(f'Error getting video details: {str(e)}')
             
         return {}
-    
+
+    # ... (keep all other existing helper methods unchanged)
     def _get_best_thumbnail(self, snippet: Dict) -> str:
         """Get the best available thumbnail"""
         thumbnails = snippet.get('thumbnails', {})
@@ -315,30 +350,13 @@ class YouTubeService:
         final_score = (view_score * 0.3 + engagement_score * 0.7)
         
         return max(0.1, min(1.0, final_score))
-    
-    def _deduplicate_and_filter(self, videos: List[Dict]) -> List[Dict]:
-        """Remove duplicates and filter low-quality content"""
-        seen_titles = set()
-        filtered = []
-        
-        for video in videos:
-            title = video['name'].lower()
-            
-            # Skip if we've seen similar title
-            if any(abs(len(title) - len(seen)) < 5 and 
-                   len(set(title.split()) & set(seen.split())) > len(title.split()) * 0.7
-                   for seen in seen_titles):
-                continue
-                
-            # Filter out very short or very long videos
-            duration = video['duration_minutes']
-            if duration < 3 or duration > 120:
-                continue
-                
-            seen_titles.add(title)
-            filtered.append(video)
-            
-        return filtered
+
+    # Legacy method for backward compatibility
+    def search_meditations(self, query: str = 'guided meditation', 
+                          max_results: int = 25) -> List[Dict]:
+        """Legacy method - redirects to paginated version"""
+        result = self.search_paginated_meditations(page=1, max_results=max_results, search_query=query)
+        return result['content']
 
 # Initialize service
 youtube_service = None

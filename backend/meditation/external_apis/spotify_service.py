@@ -1,4 +1,3 @@
-# backend/meditation/external_apis/spotify_service.py
 import os
 import base64
 import requests
@@ -17,6 +16,25 @@ class SpotifyService:
         self.client_secret = config.get('SPOTIFY_CLIENT_SECRET') or os.getenv('SPOTIFY_CLIENT_SECRET', '').strip()
         self.access_token = None
         
+        # Predefined search queries for variety across pages
+        self.meditation_queries = [
+            'meditation music',
+            'mindfulness ambient',
+            'relaxation sounds',
+            'sleep meditation',
+            'nature sounds meditation',
+            'chakra meditation music',
+            'binaural beats meditation',
+            'zen meditation music',
+            'yoga meditation',
+            'stress relief music',
+            'healing meditation',
+            'deep relaxation music',
+            'meditation piano',
+            'tibetan singing bowls',
+            'forest meditation sounds',
+        ]
+        
         logger.info(f"Spotify client_id present: {'Yes' if self.client_id else 'No'}")
         logger.info(f"Spotify client_secret present: {'Yes' if self.client_secret else 'No'}")
         if self.client_id:
@@ -33,7 +51,7 @@ class SpotifyService:
             if access_token:
                 # Test with a simple search
                 headers = {'Authorization': f'Bearer {access_token}'}
-                params = {'q': 'meditation', 'type': 'track', 'limit': 1}  # FIXED: Valid limit
+                params = {'q': 'meditation', 'type': 'track', 'limit': 1}
                 
                 response = requests.get(
                     'https://api.spotify.com/v1/search',
@@ -116,62 +134,66 @@ class SpotifyService:
             logger.error(f'Error getting Spotify access token: {str(e)}')
             return ''
     
-    def search_meditation_playlists(self, max_results: int = 50) -> List[Dict]:  # FIXED: Increased default
-        """Search for meditation playlists on Spotify"""
-        cache_key = f'spotify_playlists_{max_results}'
-        cached_result = cache.get(cache_key)
-        
-        if cached_result:
-            logger.info("Returning cached Spotify results")
-            return cached_result
-            
+    def search_paginated_meditation_playlists(self, page: int = 1, max_results: int = 20, 
+                                            search_query: str = '') -> Dict:
+        """NEW: Search for meditation content with proper pagination support"""
         access_token = self._get_access_token()
         if not access_token:
             logger.error("Cannot get Spotify access token")
-            return []
+            return {'content': [], 'total_available': 0}
+        
+        try:
+            # Use custom search query or cycle through predefined queries
+            if search_query:
+                query = f"{search_query} meditation"
+            else:
+                # Cycle through different queries for different pages
+                query_index = (page - 1) % len(self.meditation_queries)
+                query = self.meditation_queries[query_index]
             
-        search_queries = [
-            'meditation music',
-            'mindfulness ambient',
-            'relaxation sounds',
-            'sleep meditation'
-        ]
-        
-        all_tracks = []
-        
-        for query in search_queries:
-            try:
-                # FIXED: Use valid limit values (1-50 for Spotify)
-                limit_per_query = min(max_results // len(search_queries), 50)
-                tracks = self._search_tracks(access_token, query, limit=limit_per_query)
-                all_tracks.extend(tracks)
-                logger.info(f"Found {len(tracks)} tracks for query: {query}")
-                
-            except Exception as e:
-                logger.error(f'Error searching Spotify for {query}: {str(e)}')
-                continue
-        
-        # Process and filter tracks
-        processed_tracks = self._process_spotify_tracks(all_tracks)
-        unique_tracks = self._deduplicate_tracks(processed_tracks)
-        
-        # Cache for 4 hours
-        cache.set(cache_key, unique_tracks, 14400)
-        
-        logger.info(f"Returning {len(unique_tracks)} unique Spotify tracks")
-        return unique_tracks[:max_results]
+            logger.info(f"Spotify paginated search: '{query}' (page {page})")
+            
+            all_tracks = []
+            
+            # Calculate offset for pagination
+            offset = (page - 1) * max_results
+            
+            # Search for tracks
+            tracks = self._search_tracks_paginated(access_token, query, max_results, offset)
+            all_tracks.extend(tracks)
+            
+            # Also search for playlists/albums for variety (every 3rd page)
+            if page % 3 == 0:
+                playlist_tracks = self._search_playlist_tracks(access_token, query, max_results // 2)
+                all_tracks.extend(playlist_tracks)
+            
+            # Process and filter tracks
+            processed_tracks = self._process_spotify_tracks(all_tracks)
+            unique_tracks = self._deduplicate_tracks(processed_tracks)
+            
+            # Estimate total available content
+            # Spotify has lots of meditation content, so we can be generous with estimates
+            estimated_total = min(1000, max_results * 30)  # Cap at 1000 for performance
+            
+            return {
+                'content': unique_tracks[:max_results],
+                'total_available': estimated_total
+            }
+            
+        except Exception as e:
+            logger.error(f'Error in Spotify paginated search: {str(e)}')
+            return {'content': [], 'total_available': 0}
     
-    def _search_tracks(self, access_token: str, query: str, limit: int = 20) -> List[Dict]:
-        """Search for tracks on Spotify"""
+    def _search_tracks_paginated(self, access_token: str, query: str, 
+                               limit: int, offset: int) -> List[Dict]:
+        """Search for tracks with pagination support"""
         headers = {'Authorization': f'Bearer {access_token}'}
-        
-        # FIXED: Ensure limit is within valid range (1-50)
-        limit = max(1, min(limit, 50))
         
         params = {
             'q': query,
             'type': 'track',
-            'limit': limit,
+            'limit': min(50, limit),  # Spotify max is 50
+            'offset': offset,
             'market': 'US'
         }
         
@@ -183,11 +205,60 @@ class SpotifyService:
         )
         
         if response.status_code != 200:
-            logger.error(f"Spotify search failed: {response.status_code} - {response.text}")
+            logger.error(f"Spotify track search failed: {response.status_code} - {response.text}")
             return []
             
         data = response.json()
         return data.get('tracks', {}).get('items', [])
+    
+    def _search_playlist_tracks(self, access_token: str, query: str, limit: int) -> List[Dict]:
+        """Search for playlists and get tracks from them"""
+        headers = {'Authorization': f'Bearer {access_token}'}
+        
+        # First, search for playlists
+        params = {
+            'q': query,
+            'type': 'playlist',
+            'limit': 5,  # Get a few playlists
+            'market': 'US'
+        }
+        
+        response = requests.get(
+            'https://api.spotify.com/v1/search',
+            headers=headers,
+            params=params,
+            timeout=10
+        )
+        
+        if response.status_code != 200:
+            return []
+        
+        playlists = response.json().get('playlists', {}).get('items', [])
+        all_tracks = []
+        
+        # Get tracks from each playlist
+        for playlist in playlists[:2]:  # Limit to 2 playlists
+            playlist_id = playlist['id']
+            
+            try:
+                tracks_response = requests.get(
+                    f'https://api.spotify.com/v1/playlists/{playlist_id}/tracks',
+                    headers=headers,
+                    params={'limit': limit // 2},  # Split limit across playlists
+                    timeout=10
+                )
+                
+                if tracks_response.status_code == 200:
+                    tracks_data = tracks_response.json()
+                    for item in tracks_data.get('items', []):
+                        if item.get('track'):
+                            all_tracks.append(item['track'])
+                            
+            except Exception as e:
+                logger.warning(f'Error getting tracks from playlist {playlist_id}: {str(e)}')
+                continue
+        
+        return all_tracks
     
     def _process_spotify_tracks(self, tracks: List[Dict]) -> List[Dict]:
         """Process Spotify tracks into our format"""
@@ -219,7 +290,7 @@ class SpotifyService:
                     'level': 'beginner',  # Default for Spotify content
                     'artist_name': self._get_artists_string(track),
                     'album_name': track.get('album', {}).get('name', ''),
-                    'spotify_popularity': track.get('popularity', 0),  # FIXED: Use spotify_popularity
+                    'popularity': track.get('popularity', 0),
                     'effectiveness_score': self._calculate_spotify_effectiveness(track),
                     'tags': self._extract_spotify_tags(track.get('name', '')),
                     'target_states': self._detect_spotify_target_states(track.get('name', '')),
@@ -236,6 +307,7 @@ class SpotifyService:
                 
         return processed
     
+    # Keep all existing helper methods unchanged
     def _get_artists_string(self, track: Dict) -> str:
         """Get formatted artists string"""
         artists = track.get('artists', [])
@@ -341,6 +413,12 @@ class SpotifyService:
                 unique_tracks.append(track)
                 
         return unique_tracks
+
+    # Legacy method for backward compatibility
+    def search_meditation_playlists(self, max_results: int = 20) -> List[Dict]:
+        """Legacy method - redirects to paginated version"""
+        result = self.search_paginated_meditation_playlists(page=1, max_results=max_results)
+        return result['content']
 
 # Initialize service
 spotify_service = None
