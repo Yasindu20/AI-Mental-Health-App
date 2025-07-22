@@ -199,31 +199,89 @@ class ApiService {
   static Future<List<Meditation>> getExternalMeditations({
     String source = 'all',
     int page = 1,
+    String search = '',
   }) async {
     try {
       final queryParams = {
         'source': source,
         'page': page.toString(),
-        'per_page': '20', // Add explicit per_page
+        'per_page': '20',
       };
+
+      if (search.isNotEmpty) {
+        queryParams['search'] = search;
+      }
 
       final query = queryParams.entries
           .map((e) => '${e.key}=${Uri.encodeComponent(e.value)}')
           .join('&');
 
+      print(
+          'Requesting external content: /meditations/external_content/?$query');
+
       final data = await get('/meditations/external_content/?$query');
 
-      if (data is Map && data.containsKey('results')) {
-        final results = data['results'] as List? ?? [];
-        return results.map((m) => Meditation.fromJson(m)).toList();
-      } else if (data is List) {
-        return data.map((m) => Meditation.fromJson(m)).toList();
-      }
+      print('API Response type: ${data.runtimeType}');
+      print(
+          'API Response keys: ${data is Map ? data.keys.toList() : 'Not a map'}');
 
-      return [];
+      if (data is Map) {
+        if (data.containsKey('error')) {
+          throw Exception(data['error'] ?? 'Unknown error occurred');
+        }
+
+        if (data.containsKey('results')) {
+          final results = data['results'] as List? ?? [];
+          print('Found ${results.length} results in response');
+
+          final meditations = <Meditation>[];
+          for (var item in results) {
+            try {
+              final meditation = Meditation.fromJson(item);
+              meditations.add(meditation);
+            } catch (e) {
+              print('Error parsing meditation item: $e');
+              print('Item data: $item');
+              // Continue with other items instead of failing completely
+            }
+          }
+
+          print('Successfully parsed ${meditations.length} meditations');
+          return meditations;
+        } else {
+          print('Response does not contain results key: ${data.keys}');
+          return [];
+        }
+      } else if (data is List) {
+        print('Response is a list with ${data.length} items');
+        final meditations = <Meditation>[];
+        for (var item in data) {
+          try {
+            final meditation = Meditation.fromJson(item);
+            meditations.add(meditation);
+          } catch (e) {
+            print('Error parsing meditation item: $e');
+            // Continue with other items
+          }
+        }
+        return meditations;
+      } else {
+        print('Unexpected response format: ${data.runtimeType}');
+        return [];
+      }
     } catch (e) {
       print('Error getting external meditations: $e');
+      // Don't throw, return empty list so UI can show appropriate message
       return [];
+    }
+  }
+
+// Add debug method
+  static Future<Map<String, dynamic>> debugExternalContent() async {
+    try {
+      return await get('/debug/external-content/');
+    } catch (e) {
+      return {'error': e.toString(), 'debug': 'Failed to get debug info'};
     }
   }
 

@@ -16,8 +16,8 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<MeditationProvider>(context, listen: false)
-          .loadExternalMeditations();
+      final provider = Provider.of<MeditationProvider>(context, listen: false);
+      provider.loadExternalMeditations();
     });
   }
 
@@ -30,8 +30,9 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () async {
-              await Provider.of<MeditationProvider>(context, listen: false)
-                  .refreshContent();
+              final provider =
+                  Provider.of<MeditationProvider>(context, listen: false);
+              await provider.refreshExternalContent();
 
               if (mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
@@ -39,6 +40,10 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
                 );
               }
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.bug_report),
+            onPressed: () => _showDebugInfo(),
           ),
         ],
       ),
@@ -69,6 +74,34 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
                 ),
               ),
 
+              // Error Display
+              if (provider.externalError != null)
+                Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.orange.withOpacity(0.3)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.warning, color: Colors.orange),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          provider.externalError!,
+                          style: const TextStyle(color: Colors.orange),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: provider.clearExternalError,
+                        child: const Text('Dismiss'),
+                      ),
+                    ],
+                  ),
+                ),
+
               // Content
               Expanded(
                 child: _buildContent(provider),
@@ -89,49 +122,18 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
             CircularProgressIndicator(),
             SizedBox(height: 16),
             Text('Loading external content...'),
-          ],
-        ),
-      );
-    }
-
-    if (provider.error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.grey[400],
-            ),
-            const SizedBox(height: 16),
+            SizedBox(height: 8),
             Text(
-              'Error loading content',
-              style: TextStyle(
-                fontSize: 18,
-                color: Colors.grey[600],
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              provider.error!,
-              style: TextStyle(color: Colors.grey[600]),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => provider.loadExternalMeditations(
-                source: provider.selectedSource,
-              ),
-              child: const Text('Try Again'),
+              'This may take a moment',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
             ),
           ],
         ),
       );
     }
 
-    if (provider.externalMeditations.isEmpty) {
+    if (provider.externalMeditations.isEmpty &&
+        provider.externalError == null) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -152,9 +154,16 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Check your internet connection or try a different source',
+              'Try a different source or check your connection',
               style: TextStyle(color: Colors.grey[600]),
               textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => provider.loadExternalMeditations(
+                source: provider.selectedSource,
+              ),
+              child: const Text('Retry'),
             ),
           ],
         ),
@@ -187,6 +196,46 @@ class _ExternalContentScreenState extends State<ExternalContentScreen> {
             },
           );
         },
+      ),
+    );
+  }
+
+  void _showDebugInfo() async {
+    final provider = Provider.of<MeditationProvider>(context, listen: false);
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Debug Info'),
+        content: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Selected Source: ${provider.selectedSource}'),
+              Text(
+                  'External Meditations: ${provider.externalMeditations.length}'),
+              Text('Is Loading: ${provider.isLoadingExternal}'),
+              Text('Error: ${provider.externalError ?? 'None'}'),
+              const SizedBox(height: 16),
+              const Text('Sample meditation:'),
+              if (provider.externalMeditations.isNotEmpty)
+                Text(
+                  'ID: ${provider.externalMeditations.first.id}\n'
+                  'Name: ${provider.externalMeditations.first.name}\n'
+                  'Source: ${provider.externalMeditations.first.source}\n'
+                  'Type: ${provider.externalMeditations.first.type}',
+                  style: const TextStyle(fontSize: 12),
+                ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Close'),
+          ),
+        ],
       ),
     );
   }

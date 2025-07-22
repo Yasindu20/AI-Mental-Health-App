@@ -254,9 +254,9 @@ class MeditationRecommendationCard extends StatelessWidget {
   void _navigateToDetail(BuildContext context) {
     HapticFeedback.lightImpact();
 
-    // Create a Meditation object from the map data
+    // Create a Meditation object from the map data - FIXED: Use string ID
     final meditationObj = Meditation(
-      id: int.tryParse(meditation['id']?.toString() ?? '0') ?? 0,
+      id: meditation['id']?.toString() ?? '0', // FIXED: Convert to string
       name: meditation['title'] ?? 'Untitled Meditation',
       type: meditation['category'] ?? 'mindfulness',
       level: meditation['difficulty'] ?? 'Beginner',

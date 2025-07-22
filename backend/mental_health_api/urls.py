@@ -92,6 +92,40 @@ def external_content_test(request):
             'debug_info': 'Check server logs for more details'
         })
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def external_content_debug(request):
+    """Debug endpoint for external content - shows raw data"""
+    try:
+        from meditation.external_apis.content_aggregator import content_aggregator
+        
+        if not content_aggregator:
+            return Response({
+                'error': 'Content aggregator not available',
+                'debug': 'External APIs not properly initialized'
+            })
+        
+        # Get small sample from each source
+        youtube_content = content_aggregator.get_all_external_content(['youtube'], max_per_source=3)
+        spotify_content = content_aggregator.get_all_external_content(['spotify'], max_per_source=3)
+        huggingface_content = content_aggregator.get_all_external_content(['huggingface'], max_per_source=3)
+        
+        return Response({
+            'youtube_count': len(youtube_content),
+            'spotify_count': len(spotify_content),
+            'huggingface_count': len(huggingface_content),
+            'total_count': len(youtube_content) + len(spotify_content) + len(huggingface_content),
+            'sample_youtube': youtube_content[:1] if youtube_content else [],
+            'sample_spotify': spotify_content[:1] if spotify_content else [],
+            'sample_huggingface': huggingface_content[:1] if huggingface_content else [],
+            'services_status': content_aggregator.get_service_status(),
+        })
+    except Exception as e:
+        return Response({
+            'error': str(e),
+            'debug': 'Check server logs for details'
+        })
+
 # Simple root view for the main domain
 def root_view(request):
     """Root domain handler"""
@@ -152,6 +186,8 @@ router.register(r'profile', UserMeditationProfileViewSet, basename='profile')
 urlpatterns = [
     # Root domain
     path('', root_view),
+
+    path('api/debug/external-content/', external_content_debug),
     
     # Admin
     path('admin/', admin.site.urls),

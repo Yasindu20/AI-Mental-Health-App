@@ -127,9 +127,9 @@ class RecommendationBottomSheet extends StatelessWidget {
   ) {
     HapticFeedback.lightImpact();
 
-    // Track that the user accepted this recommendation
+    // Track that the user accepted this recommendation - FIXED: Convert to string
     RecommendationService.trackRecommendationAcceptance(
-      meditationId: recommendation.meditation['id'],
+      meditationId: recommendation.meditation['id']?.toString() ?? '0',
       wasAccepted: true,
     );
 
@@ -138,7 +138,8 @@ class RecommendationBottomSheet extends StatelessWidget {
 
     // Create a Meditation object from the recommendation data
     final meditationObj = Meditation(
-      id: int.tryParse(recommendation.meditation['id']?.toString() ?? '0') ?? 0,
+      id: recommendation.meditation['id']?.toString() ??
+          '0', // FIXED: Convert to string
       name: recommendation.meditation['title'] ?? 'Meditation',
       type: recommendation.meditation['category'] ?? 'mindfulness',
       level: recommendation.meditation['difficulty'] ?? 'Beginner',
