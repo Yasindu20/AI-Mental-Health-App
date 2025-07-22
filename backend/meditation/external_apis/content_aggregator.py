@@ -1,59 +1,75 @@
-# backend/meditation/external_apis/content_aggregator.py
 from typing import List, Dict, Optional
 from django.core.cache import cache
 from django.conf import settings
 import logging
-import asyncio
 import concurrent.futures
 
-# Import services with error handling
+logger = logging.getLogger(__name__)
+
+# Import services with comprehensive error handling
+services_status = {
+    'youtube': False,
+    'spotify': False,
+    'huggingface': False
+}
+
+# YouTube service
 try:
     from .youtube_service import youtube_service
-    YOUTUBE_AVAILABLE = True
-except ImportError as e:
-    YOUTUBE_AVAILABLE = False
+    if youtube_service:
+        services_status['youtube'] = True
+        logger.info("YouTube service loaded successfully")
+    else:
+        logger.warning("YouTube service failed to initialize")
+except Exception as e:
     youtube_service = None
-    print(f"YouTube service not available: {e}")
+    logger.error(f"YouTube service import error: {e}")
 
+# Spotify service
 try:
     from .spotify_service import spotify_service
-    SPOTIFY_AVAILABLE = True
-except ImportError as e:
-    SPOTIFY_AVAILABLE = False
+    if spotify_service:
+        services_status['spotify'] = True
+        logger.info("Spotify service loaded successfully")
+    else:
+        logger.warning("Spotify service failed to initialize")
+except Exception as e:
     spotify_service = None
-    print(f"Spotify service not available: {e}")
+    logger.error(f"Spotify service import error: {e}")
 
+# HuggingFace service
 try:
     from .huggingface_service import huggingface_service
-    HUGGINGFACE_AVAILABLE = True
-except ImportError as e:
-    HUGGINGFACE_AVAILABLE = False
+    if huggingface_service:
+        services_status['huggingface'] = True
+        logger.info("HuggingFace service loaded successfully")
+    else:
+        logger.warning("HuggingFace service failed to initialize")
+except Exception as e:
     huggingface_service = None
-    print(f"HuggingFace service not available: {e}")
-
-logger = logging.getLogger(__name__)
+    logger.error(f"HuggingFace service import error: {e}")
 
 class ContentAggregator:
     def __init__(self):
         self.services = {}
         
-        # Only add available services
-        if YOUTUBE_AVAILABLE and youtube_service:
+        # Only add working services
+        if services_status['youtube'] and youtube_service:
             self.services['youtube'] = youtube_service
             logger.info("YouTube service registered")
         
-        if SPOTIFY_AVAILABLE and spotify_service:
+        if services_status['spotify'] and spotify_service:
             self.services['spotify'] = spotify_service
             logger.info("Spotify service registered")
             
-        if HUGGINGFACE_AVAILABLE and huggingface_service:
+        if services_status['huggingface'] and huggingface_service:
             self.services['huggingface'] = huggingface_service
             logger.info("HuggingFace service registered")
             
-        logger.info(f"ContentAggregator initialized with {len(self.services)} services: {list(self.services.keys())}")
+        logger.info(f"ContentAggregator initialized with {len(self.services)} working services: {list(self.services.keys())}")
     
     def get_all_external_content(self, sources: List[str] = None, 
-                               max_per_source: int = 50) -> List[Dict]:
+                               max_per_source: int = 20) -> List[Dict]:
         """Aggregate content from all external sources"""
         if sources is None:
             sources = list(self.services.keys())
@@ -74,8 +90,8 @@ class ContentAggregator:
             
         all_content = []
         
-        # Use thread pool for concurrent API calls
-        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+        # Use thread pool for concurrent API calls (reduced workers to be conservative)
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
             futures = {}
             
             for source in sources:
@@ -87,7 +103,7 @@ class ContentAggregator:
             for future in concurrent.futures.as_completed(futures):
                 source = futures[future]
                 try:
-                    content = future.result(timeout=30)  # 30 second timeout
+                    content = future.result(timeout=45)  # Increased timeout
                     if content:
                         all_content.extend(content)
                         logger.info(f'Retrieved {len(content)} items from {source}')
@@ -99,8 +115,8 @@ class ContentAggregator:
         # Sort by effectiveness score
         all_content.sort(key=lambda x: x.get('effectiveness_score', 0), reverse=True)
         
-        # Cache for 2 hours
-        cache.set(cache_key, all_content, 7200)
+        # Cache for 1 hour (reduced cache time for testing)
+        cache.set(cache_key, all_content, 3600)
         
         logger.info(f"Total content aggregated: {len(all_content)} items")
         return all_content
@@ -113,6 +129,8 @@ class ContentAggregator:
             return []
             
         try:
+            logger.info(f"Getting content from {source} service...")
+            
             if source == 'youtube':
                 content = service.search_meditations(max_results=max_results)
             elif source == 'spotify':
@@ -128,8 +146,7 @@ class ContentAggregator:
                 
         except Exception as e:
             logger.error(f'Error in {source} service: {str(e)}', exc_info=True)
-            
-        return []
+            return []
     
     def search_external_content(self, query: str, sources: List[str] = None,
                               max_results: int = 20) -> List[Dict]:
@@ -235,6 +252,10 @@ class ContentAggregator:
             score += 0.3
             
         return min(1.0, score)
+    
+    def get_service_status(self) -> Dict[str, bool]:
+        """Get status of all services"""
+        return services_status.copy()
 
 # Initialize aggregator
 content_aggregator = ContentAggregator()
