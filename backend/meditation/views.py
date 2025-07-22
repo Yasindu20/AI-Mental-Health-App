@@ -7,6 +7,7 @@ from django.utils import timezone
 from django.core.cache import cache
 from datetime import datetime, timedelta
 import logging
+import math
 
 from .models import (
     Meditation, MeditationRecommendation, UserMeditationProfile,
@@ -98,52 +99,9 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
         
         return queryset
     
-    @action(detail=True, methods=['post'])
-    def start_session(self, request, pk=None):
-        """Start a meditation session"""
-        meditation = self.get_object()
-        profile, _ = UserMeditationProfile.objects.get_or_create(user=request.user)
-        
-        # Get pre-mood score
-        pre_mood = request.data.get('mood_score', 5)
-        
-        session = MeditationSession.objects.create(
-            user_profile=profile,
-            meditation=meditation,
-            started_at=timezone.now(),
-            pre_mood_score=pre_mood
-        )
-        
-        # Update meditation play count
-        meditation.times_played = models.F('times_played') + 1
-        meditation.save(update_fields=['times_played'])
-        
-        # Mark recommendation as started
-        MeditationRecommendation.objects.filter(
-            user=request.user,
-            meditation=meditation,
-            started=False
-        ).update(started=True, viewed=True)
-        
-        return Response({
-            'session_id': session.id,
-            'meditation': MeditationSerializer(meditation).data,
-            'personalized_script': self._get_personalized_script(meditation, request.user)
-        })
-    
-    def _get_personalized_script(self, meditation, user):
-        """Get personalized meditation script"""
-        if meditation.script:
-            return meditation.script
-        elif meditation.instructions:
-            return "\n\n".join([f"Step {i+1}: {instruction}" 
-                              for i, instruction in enumerate(meditation.instructions)])
-        else:
-            return f"Begin your {meditation.get_type_display().lower()} meditation by finding a comfortable position..."
-    
     @action(detail=False, methods=['get'])
     def external_content(self, request):
-        """Get external meditation content with advanced filtering - FIXED METHOD"""
+        """Get external meditation content with TRUE PAGINATION support"""
         logger.info(f"External APIs available: {EXTERNAL_APIS_AVAILABLE}")
         
         if not EXTERNAL_APIS_AVAILABLE:
@@ -152,6 +110,9 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                 'error': 'External APIs not configured',
                 'results': [],
                 'count': 0,
+                'page': 1,
+                'per_page': 20,
+                'has_next': False,
                 'debug_info': 'Check if external API services are properly imported and configured'
             })
         
@@ -162,7 +123,7 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
             page = int(request.query_params.get('page', 1))
             per_page = min(int(request.query_params.get('per_page', 20)), 50)
             
-            logger.info(f"Getting external content - source: {source}, query: {search_query}")
+            logger.info(f"Getting external content - source: {source}, query: {search_query}, page: {page}")
             
             # Determine sources to search
             valid_sources = ['youtube', 'spotify', 'huggingface']
@@ -176,24 +137,28 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                     'error': 'Invalid source specified',
                     'results': [],
                     'count': 0,
+                    'page': page,
+                    'per_page': per_page,
+                    'has_next': False,
                     'valid_sources': valid_sources
                 })
             
-            # Get content from aggregator
-            logger.info(f"Fetching content from sources: {sources}")
-            if search_query:
-                content = content_aggregator.search_external_content(
-                    query=search_query,
-                    sources=sources,
-                    max_results=per_page * 2
-                )
-            else:
-                content = content_aggregator.get_all_external_content(
-                    sources=sources,
-                    max_per_source=per_page
-                )
+            # Get content with PROPER PAGINATION
+            logger.info(f"Fetching content from sources: {sources} for page {page}")
             
-            logger.info(f"Retrieved {len(content)} items from content aggregator")
+            # NEW: Get paginated content from aggregator
+            paginated_response = content_aggregator.get_paginated_external_content(
+                sources=sources,
+                page=page,
+                per_page=per_page,
+                search_query=search_query
+            )
+            
+            content = paginated_response['results']
+            total_count = paginated_response['total_count']
+            has_next = paginated_response['has_next']
+            
+            logger.info(f"Retrieved {len(content)} items from content aggregator (page {page})")
             
             # Apply additional filters
             content = self._apply_external_filters(content, request)
@@ -234,22 +199,22 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                 }
                 formatted_content.append(formatted_item)
             
-            # Pagination
-            start_idx = (page - 1) * per_page
-            end_idx = start_idx + per_page
-            paginated_content = formatted_content[start_idx:end_idx]
+            # Calculate pagination info
+            total_pages = math.ceil(total_count / per_page) if total_count > 0 else 1
             
             result = {
-                'results': paginated_content,
-                'count': len(formatted_content),
+                'results': formatted_content,
+                'count': total_count,
                 'page': page,
                 'per_page': per_page,
-                'has_next': end_idx < len(formatted_content),
+                'total_pages': total_pages,
+                'has_next': has_next,
+                'has_previous': page > 1,
                 'sources_searched': sources,
-                'debug_info': f"Successfully fetched {len(paginated_content)} items from {len(sources)} sources"
+                'debug_info': f"Successfully fetched {len(formatted_content)} items from {len(sources)} sources (page {page}/{total_pages})"
             }
             
-            logger.info(f"Returning {len(paginated_content)} formatted items to frontend")
+            logger.info(f"Returning {len(formatted_content)} formatted items to frontend (page {page}, has_next: {has_next})")
             return Response(result)
             
         except Exception as e:
@@ -260,7 +225,10 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                     'details': str(e),
                     'debug_info': 'Check logs for detailed error information',
                     'results': [],
-                    'count': 0
+                    'count': 0,
+                    'page': page,
+                    'per_page': per_page,
+                    'has_next': False
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -335,10 +303,10 @@ class MeditationViewSet(viewsets.ReadOnlyModelViewSet):
                 except Exception as e:
                     logger.warning(f'Could not clear cache pattern {pattern}: {e}')
             
-            # Force refresh of content (this could be moved to a background task)
+            # Force refresh of content - INCREASED LIMITS
             fresh_content = content_aggregator.get_all_external_content(
                 sources=['youtube', 'spotify', 'huggingface'],
-                max_per_source=20
+                max_per_source=50  # INCREASED from 20 to 50
             )
             
             # Update sync job
